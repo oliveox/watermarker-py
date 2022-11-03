@@ -1,4 +1,5 @@
 import argparse
+import os
 
 parser = argparse.ArgumentParser(prog='watermarker', description='Add watermark to images and videos')
 parser.add_argument("--i", "--input", required=True, help="Input media files directory path | [Required]", nargs="+",
@@ -13,6 +14,33 @@ parser.add_argument("--o", "--output",
                     help="Output watermarked files drectory. If path doesn't exist, it will be created | [Optional]",
                     nargs=1, metavar="OUTPUT FILE(S) PATH")
 
-parser.parse_args()
+args = parser.parse_args()
 
-# check input and watermark exist
+watermark_path = args.w[0]
+prefix = args.p[0]
+
+if len(list(filter(os.path.exists, args.i))) == 0:
+    print("Input contains a path that doesn't exist")
+    exit(1)
+
+if not os.path.exists(watermark_path):
+    print("Watermark doesn't exist")
+    exit(1)
+
+if not len(prefix):
+    print("Prefix must have at least one character")
+    exit(1)
+
+if args.o:
+    if os.path.exists(args.o) and not os.path.isdir(args.o):
+        print("Specified output path already exists and is not a directory")
+        exit(1)
+
+    if not os.path.exists(args.o):
+        print("Output directory path doesn't exist. Creating it.")
+
+        try:
+            os.makedirs(args.o)
+        except Exception as e:
+            print(f"Failed to create output directory. Error: {e}")
+            exit(1)
