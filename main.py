@@ -1,20 +1,18 @@
 import argparse
 
-parser = argparse.ArgumentParser(description='Add watermark to images and videos')
-parser.add_argument("--i", "--input", help="Input media files directory path | [Required]")
-parser.add_argument("--w", "--watermark", help="Watermark file path | [Required]")
+parser = argparse.ArgumentParser(prog='watermarker', description='Add watermark to images and videos')
+parser.add_argument("--i", "--input", required=True, help="Input media files directory path | [Required]", nargs="+",
+                    metavar="DIRECTORY/FILE PATH(S)")
+parser.add_argument("--w", "--watermark", required=True, help="Watermark file path | [Required]", nargs=1,
+                    metavar="WATERMARK PATH")
 parser.add_argument("--p", "--prefix",
-                    help="Prefix of the new file. OutputFilename = {prefix}{InputFilename} | [Required]")
+                    required=True, help="Prefix of the new file. OutputFilename = {prefix}{InputFilename} | [Required]",
+                    nargs=1, metavar="OUTPUT FILENAME PREFIX")
 parser.add_argument("--o", "--output",
-                    help="Output watermarked files drectory. If path doesn't exist, it will be created | [Optional]")
+                    required=False,
+                    help="Output watermarked files drectory. If path doesn't exist, it will be created | [Optional]",
+                    nargs=1, metavar="OUTPUT FILE(S) PATH")
 
 parser.parse_args()
-"""
-arguments
 
-- input dir / input file (mandatory)
-- watermark path (mandatory)
-- prefix of new file (optiona;)
-- output dir (optional)
-- position of watermark (optional)
-"""
+# check input and watermark exist
