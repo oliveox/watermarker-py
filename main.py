@@ -1,6 +1,8 @@
 import argparse
 import os
 
+from utils import valid_watermark, valid_prefix
+
 parser = argparse.ArgumentParser(prog='watermarker', description='Add watermark to images and videos')
 parser.add_argument("--i", "--input", required=True, help="Input media files directory path | [Required]", nargs="+",
                     metavar="DIRECTORY/FILE PATH(S)")
@@ -19,16 +21,14 @@ args = parser.parse_args()
 watermark_path = args.w[0]
 prefix = args.p[0]
 
-if len(list(filter(os.path.exists, args.i))) == 0:
+if not all(os.path.exists(i) for i in args.i):
     print("Input contains a path that doesn't exist")
     exit(1)
 
-if not os.path.exists(watermark_path):
-    print("Watermark doesn't exist")
+if not valid_watermark(watermark_path):
     exit(1)
 
-if not len(prefix):
-    print("Prefix must have at least one character")
+if not valid_prefix(prefix):
     exit(1)
 
 if args.o:
