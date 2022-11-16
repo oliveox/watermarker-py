@@ -39,5 +39,4 @@ termcolor==2.1.0
 tomli==2.0.1
 typing-inspect==0.8.0
 typing_extensions==4.4.0
--e git+ssh://git@github.com/oliveox/watermarker-goes-boom.git@1397cdce4c8ca6f7239a06f264cbadb89f325d93#egg=watermarker
 wrapt==1.14.1
