@@ -25,6 +25,29 @@ class FormatCommand(cmd.Command):
             level=log.INFO)
         subprocess.check_call(command)
 
+class ImportFormatCommand(cmd.Command):
+    """A custom command to run Pylint on all Python source files."""
+
+    description = 'run black on Python source files'
+    user_options = [
+    ]
+
+    def initialize_options(self):
+        """Set default values for options."""
+        pass
+
+    def finalize_options(self):
+        """Post-process options."""
+        pass
+
+    def run(self):
+        """Run command."""
+        command = ['isort', 'src', 'tests']
+        self.announce(
+            'Running command: %s' % str(command),
+            level=log.INFO)
+        subprocess.check_call(command)
+
 class LintCommand(cmd.Command):
     """A custom command to run Pylint on all Python source files."""
 
@@ -67,6 +90,7 @@ class FixCommand(cmd.Command):
         """Run command."""
         self.run_command('lint')
         self.run_command('format')
+        self.run_command('format_imports')
 
 setup(
     name='watermarker',
@@ -79,6 +103,7 @@ setup(
     cmdclass={
         'lint': LintCommand,
         'format': FormatCommand,
+        'format_imports': ImportFormatCommand,
         'fix': FixCommand
     },
 )
