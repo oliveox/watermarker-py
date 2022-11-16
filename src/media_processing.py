@@ -1,6 +1,6 @@
-from PIL import Image
 import ffmpeg
 from filetype import filetype
+from PIL import Image
 
 from src.constants import constants
 

@@ -1,8 +1,8 @@
-from src.media_processing import get_image_orientation, get_video_orientation
 import pytest
 
-from src.utils import watermark_image, watermark_video
 from src.config import config_manager
+from src.media_processing import get_video_orientation
+from src.utils import watermark_image, watermark_video
 
 
 @pytest.mark.parametrize(
@@ -19,17 +19,17 @@ def test_get_orientation_metadata(file_path, expected_orientation):
     assert actual_orientation == expected_orientation
 
 
-@pytest.mark.parametrize(
-    "file_path,expected_orientation",
-    [
-        #     ("tests/resources/sky.JPG", "landscape"),
-        # ("tests/resources/crane.JPG", "portrait"),
-    ],
-)
-def test_get_orientation_metadata(file_path, expected_orientation):
-    # TODO - video with rotate data
-    actual_orientation = get_image_orientation(file_path)
-    assert actual_orientation == expected_orientation
+# @pytest.mark.parametrize(
+#     "file_path,expected_orientation",
+#     [
+#         #     ("tests/resources/sky.JPG", "landscape"),
+#         # ("tests/resources/crane.JPG", "portrait"),
+#     ],
+# )
+# def test_get_orientation_metadata(file_path, expected_orientation):
+#     # TODO - video with rotate data
+#     actual_orientation = get_image_orientation(file_path)
+#     assert actual_orientation == expected_orientation
 
 
 @pytest.mark.parametrize(
@@ -57,7 +57,7 @@ def test_watermark_video(file_path, expected_orientation):
     watermark_video(file_path)
 
 
-def test_load_configuration_file():
-    from src.config import config_manager
-
-    watermark_config = config_manager.config["WATERMARK"]
+# def test_load_configuration_file():
+#     from src.config import config_manager
+#
+#     watermark_config = config_manager.config["WATERMARK"]

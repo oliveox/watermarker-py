@@ -1,14 +1,9 @@
 import argparse
 
-from utils import process_paths
-from src.cli import (
-    valid_input_paths,
-    valid_watermark_file,
-    valid_prefix,
-    valid_output_path,
-)
+from src.cli import (valid_input_paths, valid_output_path, valid_prefix,
+                     valid_watermark_file)
 from src.config import config_manager
-
+from utils import process_paths
 
 parser = argparse.ArgumentParser(
     prog="watermarker", description="Add watermark to images and videos"

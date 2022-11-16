@@ -4,17 +4,13 @@ import subprocess
 
 from filetype import filetype
 
-from src.cli import valid_media_file
 from src.config import config_manager
 from src.constants import constants
-from src.media_processing import (
-    get_overlay,
-    get_image_orientation,
-    get_watermarking_command,
-    get_watermark_scaling,
-    get_watermark_image_ratio,
-    get_video_orientation,
-)
+from src.media_processing import (get_image_orientation, get_overlay,
+                                  get_video_orientation,
+                                  get_watermark_image_ratio,
+                                  get_watermark_scaling,
+                                  get_watermarking_command, valid_media_file)
 
 
 def process_paths(paths):
