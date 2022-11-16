@@ -7,7 +7,7 @@ from src.constants import constants
 
 def get_overlay(position, margin_nord, margin_south, margin_east, margin_west):
     overlay = ""
-    if position not in ['NE', 'NC', 'NW', 'SE', 'SC', 'SW', 'C', 'CE', 'CW']:
+    if position not in ["NE", "NC", "NW", "SE", "SC", "SW", "C", "CE", "CW"]:
         print(f"Invalid watermark position: {position}")
 
     if not margin_nord:
@@ -21,9 +21,9 @@ def get_overlay(position, margin_nord, margin_south, margin_east, margin_west):
 
     def get_sign(value, inverse):
         if value > 0:
-            sign = '-' if inverse else '+'
+            sign = "-" if inverse else "+"
         else:
-            sign = '+' if inverse else '-'
+            sign = "+" if inverse else "-"
 
         return f"{sign}{abs(value)}"
 
@@ -33,47 +33,47 @@ def get_overlay(position, margin_nord, margin_south, margin_east, margin_west):
     def get_vertical_margins(nord, south):
         return f"{get_sign(nord, False)}{get_sign(south, True)}"
 
-    if position == 'NE':
+    if position == "NE":
         overlay = (
             f"0{get_horizontal_margins(margin_east, margin_west)}"
             f":0{get_vertical_margins(margin_nord, margin_south)}"
         )
-    elif position == 'NC':
+    elif position == "NC":
         overlay = (
             f"(main_w/2-overlay_w/2{get_horizontal_margins(margin_east, margin_west)}"
             f":0{get_vertical_margins(margin_nord, margin_south)}"
         )
-    elif position == 'NW':
+    elif position == "NW":
         overlay = (
             f"main_w-overlay_w{get_horizontal_margins(margin_east, margin_west)}"
             f":0{get_vertical_margins(margin_nord, margin_south)}"
         )
-    elif position == 'SE':
+    elif position == "SE":
         overlay = (
             f"0{get_horizontal_margins(margin_east, margin_west)}"
             f":main_h-overlay_h{get_vertical_margins(margin_nord, margin_south)}"
         )
-    elif position == 'SC':
+    elif position == "SC":
         overlay = (
             f"(main_w/2-overlay_w/2{get_horizontal_margins(margin_east, margin_west)}"
             f":main_h-overlay_h{get_vertical_margins(margin_nord, margin_south)}"
         )
-    elif position == 'SW':
+    elif position == "SW":
         overlay = (
             f"main_w-overlay_w{get_horizontal_margins(margin_east, margin_west)}"
             f":main_h-overlay_h{get_vertical_margins(margin_nord, margin_south)}"
         )
-    elif position == 'C':
+    elif position == "C":
         overlay = (
             f"(main_w/2-overlay_w/2{get_horizontal_margins(margin_east, margin_west)}"
             f":(main_h/2-overlay_h/2{get_vertical_margins(margin_nord, margin_south)})"
         )
-    elif position == 'CE':
+    elif position == "CE":
         overlay = (
             f"0{get_horizontal_margins(margin_east, margin_west)}"
             f":(main_h/2-overlay_h/2{get_vertical_margins(margin_nord, margin_south)})"
         )
-    elif position == 'CW':
+    elif position == "CW":
         overlay = (
             f"main_w-overlay_w{get_horizontal_margins(margin_east, margin_west)}"
             f":(main_h/2-overlay_h/2{get_vertical_margins(margin_nord, margin_south)})"
@@ -98,7 +98,7 @@ def get_video_orientation(path):
     # ffprobe needs to be installed as a package on the client OS
     metadata = ffmpeg.probe(path)
     try:
-        rotation = metadata['streams'][0]['tags']['rotate']  # noqa: F841
+        rotation = metadata["streams"][0]["tags"]["rotate"]  # noqa: F841
         # TODO - find video with rotate data
     except IndexError:
         # TODO - decide on logging format
@@ -110,9 +110,16 @@ def get_video_orientation(path):
     return constants.LANDSCAPE
 
 
-def get_watermarking_command(input_file_path, watermark_path, output_file_path, transpose, overlay, watermark_scaling):
+def get_watermarking_command(
+    input_file_path,
+    watermark_path,
+    output_file_path,
+    transpose,
+    overlay,
+    watermark_scaling,
+):
     return (
-        f'ffmpeg -y -i {input_file_path} -i {watermark_path} '
+        f"ffmpeg -y -i {input_file_path} -i {watermark_path} "
         f'-filter_complex "{transpose}{watermark_scaling}{overlay}" "{output_file_path}"'
     )
 
@@ -125,8 +132,8 @@ def get_watermark_scaling(path, orientation, watermark_image_ratio):
     if not metadata:
         return
 
-    width = metadata['width']
-    height = metadata['height']
+    width = metadata["width"]
+    height = metadata["height"]
 
     if orientation == constants.LANDSCAPE:
         watermark_height = height * watermark_to_height_ratio
@@ -146,8 +153,8 @@ def get_watermark_image_ratio(path):
     if not metadata:
         return
 
-    width = metadata['width']
-    height = metadata['height']
+    width = metadata["width"]
+    height = metadata["height"]
     return width / height
 
 
@@ -157,7 +164,11 @@ def get_media_file_size(file_path):
     # TODO - create a mediaFile class for each file
     # modularize metadata extraction
     try:
-        if not metadata or not metadata['streams'][0]['height'] or not metadata['streams'][0]['width']:
+        if (
+            not metadata
+            or not metadata["streams"][0]["height"]
+            or not metadata["streams"][0]["width"]
+        ):
             print(f"No metadata found in file: [{file_path}]")
             return
     except IndexError:
@@ -168,13 +179,10 @@ def get_media_file_size(file_path):
         print(f"No rotation metadata found in file: [{file_path}]")
         return
 
-    width = metadata['streams'][0]['width']
-    height = metadata['streams'][0]['height']
+    width = metadata["streams"][0]["width"]
+    height = metadata["streams"][0]["height"]
 
-    return {
-        'width': width,
-        'height': height
-    }
+    return {"width": width, "height": height}
 
 
 def valid_media_file(path):
@@ -183,8 +191,8 @@ def valid_media_file(path):
         print(f"Cannot guess file type for: {path}")
         return False
 
-    if not kind.mime.startswith('image') and not kind.mime.startswith('video'):
-        print(f'Invalid media file: [{path}]. Mime: [{kind.mime}]')
+    if not kind.mime.startswith("image") and not kind.mime.startswith("video"):
+        print(f"Invalid media file: [{path}]. Mime: [{kind.mime}]")
         return False
 
     return True

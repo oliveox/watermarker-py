@@ -1,6 +1,6 @@
 class _Constants:
-    PORTRAIT = 'portrait'
-    LANDSCAPE = 'landscape'
+    PORTRAIT = "portrait"
+    LANDSCAPE = "landscape"
 
 
 constants = _Constants()

@@ -2,7 +2,6 @@ import configparser
 
 
 class _ConfigManager:
-
     def __init__(self):
         self.watermark_file_path = None
         self.output_dir_path = None
