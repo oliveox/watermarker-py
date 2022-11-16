@@ -1,6 +1,7 @@
 import argparse
 
-from utils import valid_watermark_file, valid_prefix, valid_output_path, valid_input_paths, process_paths
+from utils import process_paths
+from src.cli import valid_input_paths, valid_watermark_file, valid_prefix, valid_output_path
 from src.config import config_manager
 
 
