@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 
-from src.setup_classes import MetricsCommand, FormatCommand, ImportFormatCommand, LintCommand, FixCommand
+from src.setup_classes import MetricsCommand, FormatCommand, ImportFormatCommand, LintCommand, FixCommand, \
+    TypeCheckCommand
 
 setup(
     name='watermarker',
@@ -14,6 +15,7 @@ setup(
         'lint': LintCommand,
         'format': FormatCommand,
         'format_imports': ImportFormatCommand,
+        'type_check': TypeCheckCommand,
         'fix': FixCommand,
         'metrics': MetricsCommand,
     },
