@@ -103,7 +103,7 @@ class TypeCheckCommand(cmd.Command):
 
     def run(self):
         """Run command."""
-        command = ["mypy", "src", "tests"]
+        command = ["mypy", "--strict", "src", "tests"]
         self.announce("Running command: %s" % str(command), level=log.INFO)
         subprocess.check_call(command)
 
