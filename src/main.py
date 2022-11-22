@@ -3,7 +3,7 @@ import argparse
 from src.cli import (valid_input_paths, valid_output_path, valid_prefix,
                      valid_watermark_file)
 from src.config import config_manager
-from utils import process_paths
+from utils import get_valid_media_files, watermark_files
 
 parser = argparse.ArgumentParser(
     prog="watermarker", description="Add watermark to images and videos"
@@ -63,6 +63,9 @@ if output_path and not valid_output_path(output_path):
 
 config_manager.set_watermark_file_path(watermark_path)
 config_manager.set_output_dir_path(output_path)
-process_paths(input_paths)
+config_manager.set_output_file_prefix(prefix)
+
+media_files = get_valid_media_files(input_paths)
+watermark_files(media_files)
 
 exit(0)

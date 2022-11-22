@@ -4,7 +4,7 @@ import string
 from filetype import filetype
 
 
-def valid_input_paths(paths):
+def valid_input_paths(paths: list[str]) -> bool:
     if not len(paths):
         print("No input paths specified")
         return False
@@ -16,7 +16,7 @@ def valid_input_paths(paths):
     return True
 
 
-def valid_watermark_file(file_path):
+def valid_watermark_file(file_path: str) -> bool:
     if not os.path.exists(file_path):
         print("Watermark doesn't exist")
         return False
@@ -33,7 +33,7 @@ def valid_watermark_file(file_path):
     return True
 
 
-def valid_prefix(prefix):
+def valid_prefix(prefix: str) -> bool:
     whitelist_chars = string.ascii_letters + string.digits + "_-."
 
     if not len(prefix):
@@ -49,16 +49,16 @@ def valid_prefix(prefix):
     return True
 
 
-def valid_output_path(path):
-    if os.path.exists(path) and not os.path.isdir(path):
+def valid_output_path(file_path: str) -> bool:
+    if os.path.exists(file_path) and not os.path.isdir(file_path):
         print("Specified output path already exists and is not a directory")
         return False
 
-    if not os.path.exists(path):
+    if not os.path.exists(file_path):
         print("Output directory path doesn't exist. Creating it.")
 
         try:
-            os.makedirs(path)
+            os.makedirs(file_path)
         except Exception as e:
             print(f"Failed to create output directory. Error: {e}")
             return False

@@ -1,11 +1,19 @@
+from typing import Optional
+
 import ffmpeg
 from filetype import filetype
 from PIL import Image
 
-from src.constants import constants
+from src.types import MediaFileOrientation, MediaFileSize
 
 
-def get_overlay(position, margin_nord, margin_south, margin_east, margin_west):
+def get_overlay(
+    position: str,
+    margin_nord: Optional[int],
+    margin_south: Optional[int],
+    margin_east: Optional[int],
+    margin_west: Optional[int],
+) -> str:
     overlay = ""
     if position not in ["NE", "NC", "NW", "SE", "SC", "SW", "C", "CE", "CW"]:
         print(f"Invalid watermark position: {position}")
@@ -19,7 +27,7 @@ def get_overlay(position, margin_nord, margin_south, margin_east, margin_west):
     if not margin_west:
         margin_west = 0
 
-    def get_sign(value, inverse):
+    def get_sign(value: int, inverse: bool) -> str:
         if value > 0:
             sign = "-" if inverse else "+"
         else:
@@ -27,10 +35,10 @@ def get_overlay(position, margin_nord, margin_south, margin_east, margin_west):
 
         return f"{sign}{abs(value)}"
 
-    def get_horizontal_margins(east, west):
+    def get_horizontal_margins(east: int, west: int) -> str:
         return f"{get_sign(east, False)}{get_sign(west, True)}"
 
-    def get_vertical_margins(nord, south):
+    def get_vertical_margins(nord: int, south: int) -> str:
         return f"{get_sign(nord, False)}{get_sign(south, True)}"
 
     if position == "NE":
@@ -84,17 +92,21 @@ def get_overlay(position, margin_nord, margin_south, margin_east, margin_west):
     return f"overlay={overlay}"
 
 
-def get_image_orientation(path):
+def get_image_orientation(path: str) -> str:
     image = Image.open(path)
     exif = image.getexif()
     orientation = exif.get(274, None)
     if isinstance(orientation, bytes):
         orientation = orientation.decode()
     # docs - will assume landscape if orientation == None (no available metadata)
-    return constants.PORTRAIT if orientation in [5, 6, 7, 8] else constants.LANDSCAPE
+    return (
+        MediaFileOrientation.PORTRAIT
+        if orientation in [5, 6, 7, 8]
+        else MediaFileOrientation.LANDSCAPE
+    )
 
 
-def get_video_orientation(path):
+def get_video_orientation(path: str) -> str:
     # ffprobe needs to be installed as a package on the client OS
     metadata = ffmpeg.probe(path)
     try:
@@ -107,58 +119,34 @@ def get_video_orientation(path):
         print(f"No rotation metadata found in file: [{path}]")
 
     # docs - will assume landscape if orientation == None (no available metadata)
-    return constants.LANDSCAPE
+    return MediaFileOrientation.LANDSCAPE
 
 
 def get_watermarking_command(
-    input_file_path,
-    watermark_path,
-    output_file_path,
-    transpose,
-    overlay,
-    watermark_scaling,
-):
+    input_file_path: str,
+    watermark_path: str,
+    output_file_path: str,
+    transpose: str,
+    overlay: str,
+    watermark_scaling: str,
+) -> str:
     return (
         f"ffmpeg -y -i {input_file_path} -i {watermark_path} "
         f'-filter_complex "{transpose}{watermark_scaling}{overlay}" "{output_file_path}"'
     )
 
 
-def get_watermark_scaling(path, orientation, watermark_image_ratio):
-    watermark_to_height_ratio = 0.05
-    watermark_to_width_ratio = 0.2
-
-    metadata = get_media_file_size(path)
+def get_watermark_image_ratio(path: str) -> float | None:
+    metadata = get_media_file_ratio(path)
     if not metadata:
         return
 
-    width = metadata["width"]
     height = metadata["height"]
-
-    if orientation == constants.LANDSCAPE:
-        watermark_height = height * watermark_to_height_ratio
-        watermark_width = watermark_image_ratio * watermark_height
-    elif orientation == constants.PORTRAIT:
-        watermark_width = width * watermark_to_width_ratio
-        watermark_height = watermark_width / watermark_image_ratio
-    else:
-        print(f"Invalid orientation: {orientation}")
-        return
-
-    return f"[1:v] scale={watermark_width}:{watermark_height} [wtrmrk];"
-
-
-def get_watermark_image_ratio(path):
-    metadata = get_media_file_size(path)
-    if not metadata:
-        return
-
     width = metadata["width"]
-    height = metadata["height"]
     return width / height
 
 
-def get_media_file_size(file_path):
+def get_media_file_ratio(file_path: str) -> Optional[MediaFileSize]:
     metadata = ffmpeg.probe(file_path)
 
     # TODO - create a mediaFile class for each file
@@ -185,7 +173,7 @@ def get_media_file_size(file_path):
     return {"width": width, "height": height}
 
 
-def valid_media_file(path):
+def valid_media_file(path: str) -> bool:
     kind = filetype.guess(path)
     if kind is None:
         print(f"Cannot guess file type for: {path}")

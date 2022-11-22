@@ -2,97 +2,89 @@ import os
 import shlex
 import subprocess
 
-from filetype import filetype
-
 from src.config import config_manager
-from src.constants import constants
-from src.media_processing import (get_image_orientation, get_overlay,
-                                  get_video_orientation,
-                                  get_watermark_image_ratio,
-                                  get_watermark_scaling,
-                                  get_watermarking_command, valid_media_file)
+from src.File import File
+from src.media_processing import get_watermarking_command, valid_media_file
+from src.types import FileType
 
 
-def process_paths(paths):
+def get_valid_media_files(paths: list[str]) -> list[File]:
     try:
+        valid_media_files: list[File] = []
         for path in paths:
             with os.scandir(path) as it:
                 for entry in it:
                     if entry.is_file() and valid_media_file(entry.path):
-                        watermark_file(entry.path)
+                        valid_media_files.append(File(entry.path))
                     elif entry.is_dir():
-                        process_paths([entry.path])
+                        get_valid_media_files([entry.path])
                     else:
                         print(
                             f"Warning. Path nor directory nor file. Skipping path: {path}"
                         )
+
+        return valid_media_files
     except OSError as e:
-        print(f"Failed to process paths. Error: {e}")
+        print(f"Failed to validate paths. Error: {e}")
 
 
-def watermark_image(path):
-    print(f"Watermarking image: {path}")
+def watermark_files(media_files: list[File]) -> None:
+    for media_file in media_files:
+        try:
+            watermark_file(media_file)
+        except Exception as e:
+            print(f"Failed to watermark file: {media_file.path}. Error: {e}")
 
-    output_file_path = config_manager.get_output_dir_path()
+
+def watermark_image(file: File) -> None:
+    print(f"Watermarking image: {file.path}")
+
+    orientation = file.get_orientation()
+
+    overlay = config_manager.get_image_watermark_overlay(orientation)
+    transpose = config_manager.get_image_transpose(orientation)
     watermark_file_path = config_manager.get_watermark_file_path()
-    watermark_configs = config_manager.get_watermark_positioning_configs()
 
-    overlay = f"[wtrmrk]{get_overlay(**watermark_configs)}"
+    watermark_scaling = file.get_watermark_scaling()
+    output_file_path = file.get_output_file_path()
 
-    orientation = get_image_orientation(path)
-    if orientation == constants.PORTRAIT:
-        transpose = "[0:v]transpose=2 [mediaFile],"
-        overlay = f"[mediaFile]{overlay}"
+    command = get_watermarking_command(
+        input_file_path=file.path,
+        watermark_path=watermark_file_path,
+        output_file_path=output_file_path,
+        overlay=overlay,
+        transpose=transpose,
+        watermark_scaling=watermark_scaling,
+    )
+    subprocess.run(shlex.split(command))
+
+
+def watermark_video(file: File) -> None:
+    print(f"Watermarking video: {file.path}")
+
+    watermark_file_path = config_manager.get_watermark_file_path()
+    overlay = config_manager.get_video_watermark_overlay()
+    transpose = config_manager.get_video_transpose()
+
+    watermark_scaling = file.get_watermark_scaling()
+    output_file_path = file.get_output_file_path()
+
+    command = get_watermarking_command(
+        input_file_path=file.path,
+        watermark_path=watermark_file_path,
+        output_file_path=output_file_path,
+        overlay=overlay,
+        transpose=transpose,
+        watermark_scaling=watermark_scaling,
+    )
+    subprocess.run(shlex.split(command))
+
+
+def watermark_file(file: File) -> None:
+    file_type = file.get_type()
+    if file_type == FileType.IMAGE:
+        watermark_image(file)
+    elif file_type == FileType.VIDEO:
+        watermark_video(file)
     else:
-        transpose = ""
-        overlay = f"[0:v]{overlay}"
-
-    watermark_image_ratio = get_watermark_image_ratio(watermark_file_path)
-    watermark_scaling = get_watermark_scaling(
-        path=path, orientation=orientation, watermark_image_ratio=watermark_image_ratio
-    )
-    command = get_watermarking_command(
-        input_file_path=path,
-        watermark_path=watermark_file_path,
-        output_file_path=output_file_path,
-        overlay=overlay,
-        transpose=transpose,
-        watermark_scaling=watermark_scaling,
-    )
-    subprocess.run(shlex.split(command))
-
-
-def watermark_video(path):
-    print(f"Watermarking video: {path}")
-
-    output_file_path = config_manager.get_output_dir_path()
-    watermark_file_path = config_manager.get_watermark_file_path()
-    watermark_configs = config_manager.get_watermark_positioning_configs()
-
-    overlay = f"[0:v][wtrmrk]{get_overlay(**watermark_configs)}"
-    transpose = ""
-    orientation = get_video_orientation(path)
-
-    watermark_image_ratio = get_watermark_image_ratio(watermark_file_path)
-    watermark_scaling = get_watermark_scaling(
-        path=path, orientation=orientation, watermark_image_ratio=watermark_image_ratio
-    )
-    command = get_watermarking_command(
-        input_file_path=path,
-        watermark_path=watermark_file_path,
-        output_file_path=output_file_path,
-        overlay=overlay,
-        transpose=transpose,
-        watermark_scaling=watermark_scaling,
-    )
-    subprocess.run(shlex.split(command))
-
-
-def watermark_file(path):
-    kind = filetype.guess(path)
-
-    if kind.mime.startswith("image"):
-        watermark_image(path)
-
-    elif kind.mime.startswith("video"):
-        watermark_video(path)
+        print(f"Warning. Unknown file type. Skipping file: {file.path}")
