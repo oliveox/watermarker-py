@@ -1,7 +1,7 @@
 import argparse
 
-from src.cli import (valid_input_paths, valid_output_path, valid_prefix,
-                     valid_watermark_file)
+from src.cli_validation import (valid_input_paths, valid_output_path,
+                                valid_prefix, valid_watermark_file)
 from src.config import config_manager
 from utils import get_valid_media_files, watermark_files
 

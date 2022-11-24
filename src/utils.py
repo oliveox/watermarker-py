@@ -2,9 +2,11 @@ import os
 import shlex
 import subprocess
 
+from filetype import filetype
+
 from src.config import config_manager
-from src.File import File
-from src.media_processing import get_watermarking_command, valid_media_file
+from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
+from src.file import File
 from src.types import FileType
 
 
@@ -48,7 +50,7 @@ def watermark_image(file: File) -> None:
     watermark_scaling = file.get_watermark_scaling()
     output_file_path = file.get_output_file_path()
 
-    command = get_watermarking_command(
+    command = FFmpegUtilsMixin.get_watermarking_command(
         input_file_path=file.path,
         watermark_path=watermark_file_path,
         output_file_path=output_file_path,
@@ -69,7 +71,7 @@ def watermark_video(file: File) -> None:
     watermark_scaling = file.get_watermark_scaling()
     output_file_path = file.get_output_file_path()
 
-    command = get_watermarking_command(
+    command = FFmpegUtilsMixin.get_watermarking_command(
         input_file_path=file.path,
         watermark_path=watermark_file_path,
         output_file_path=output_file_path,
@@ -88,3 +90,16 @@ def watermark_file(file: File) -> None:
         watermark_video(file)
     else:
         print(f"Warning. Unknown file type. Skipping file: {file.path}")
+
+
+def valid_media_file(path: str) -> bool:
+    kind = filetype.guess(path)
+    if kind is None:
+        print(f"Cannot guess file type for: {path}")
+        return False
+
+    if not kind.mime.startswith("image") and not kind.mime.startswith("video"):
+        print(f"Invalid media file: [{path}]. Mime: [{kind.mime}]")
+        return False
+
+    return True

@@ -1,10 +1,11 @@
 import configparser
 
-from src.media_processing import get_media_file_ratio, get_overlay
+from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
+from src.media_utils_mixin import MediaUtilsMixin
 from src.types import MediaFileOrientation, WatermarkRelativeSize
 
 
-class _ConfigManager:
+class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     configuration_file_path = "config.ini"
 
     def __init__(self):
@@ -99,14 +100,15 @@ class _ConfigManager:
         watermark_margins = self.get_watermark_margins()
         watermark_position = self.get_watermark_position()
 
+        overlay = FFmpegUtilsMixin.get_overlay(
+            position=watermark_position, **watermark_margins
+        )
         if file_orientation == MediaFileOrientation.LANDSCAPE:
-            self._image_watermark_overlay[
-                file_orientation
-            ] = f"[0:v][wtrmrk]{get_overlay(position=watermark_position, **watermark_margins)}"
+            self._image_watermark_overlay[file_orientation] = f"[0:v][wtrmrk]{overlay}"
         elif file_orientation == MediaFileOrientation.PORTRAIT:
             self._image_watermark_overlay[
                 file_orientation
-            ] = f"[mediaFile][wtrmrk]{get_overlay(position=watermark_position, **watermark_margins)}"
+            ] = f"[mediaFile][wtrmrk]{overlay}"
 
         return self._image_watermark_overlay[file_orientation]
 
@@ -116,8 +118,11 @@ class _ConfigManager:
 
         watermark_margins = self.get_watermark_margins()
         watermark_position = self.get_watermark_position()
+        overlay = FFmpegUtilsMixin.get_overlay(
+            position=watermark_position, **watermark_margins
+        )
 
-        self._video_watermark_overlay = f"[0:v][wtrmrk]{get_overlay(position=watermark_position, **watermark_margins)}"
+        self._video_watermark_overlay = f"[0:v][wtrmrk]{overlay}"
         return self._video_watermark_overlay
 
     def get_video_transpose(self):
@@ -133,15 +138,9 @@ class _ConfigManager:
         if self._watermark_image_ratio:
             return self._watermark_image_ratio
 
-        metadata = get_media_file_ratio(config_manager.watermark_file_path)
-        if not metadata:
-            return
-
-        height = metadata["height"]
-        width = metadata["width"]
-        self._watermark_image_ratio = width / height
-
+        self._watermark_image_ratio = MediaUtilsMixin.get_ratio(
+            config_manager.watermark_file_path
+        )
         return self._watermark_image_ratio
-
 
 config_manager = _ConfigManager()

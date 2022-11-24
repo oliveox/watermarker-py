@@ -3,12 +3,11 @@ import os
 from filetype import filetype
 
 from src.config import config_manager
-from src.media_processing import (get_image_orientation, get_media_file_ratio,
-                                  get_video_orientation)
+from src.media_utils_mixin import MediaUtilsMixin
 from src.types import FileType, MediaFileOrientation, WatermarkRelativeSize
 
 
-class File:
+class File(MediaUtilsMixin):
     def __init__(self, path: str) -> None:
         self._watermark_scaling = None
         self._output_file_path = None
@@ -35,9 +34,9 @@ class File:
             return self._orientation
 
         if self.get_type() == FileType.IMAGE:
-            self._orientation = get_image_orientation(self.path)
+            self._orientation = MediaUtilsMixin.get_image_orientation(self.path)
         elif self.get_type() == FileType.VIDEO:
-            self._orientation = get_video_orientation(self.path)
+            self._orientation = MediaUtilsMixin.get_video_orientation(self.path)
 
         return self._orientation
 
@@ -59,12 +58,14 @@ class File:
         if self._watermark_scaling:
             return self._watermark_scaling
 
-        watermark_image_ratio = config_manager.get_watermark_image_ratio()
+        watermark_image_ratio = MediaUtilsMixin.get_ratio(
+            config_manager.watermark_file_path
+        )
         watermark_relative_sizes = config_manager.get_watermark_relative_size()
 
-        metadata = get_media_file_ratio(self.path)
+        metadata = MediaUtilsMixin.get_width_height(self.path)
         if not metadata:
-            return
+            raise
 
         width = metadata["width"]
         height = metadata["height"]

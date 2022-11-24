@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 
-class MediaFileSize(TypedDict):
+class WidthHeight(TypedDict):
     width: int
     height: int
 

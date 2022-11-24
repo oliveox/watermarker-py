@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-from src.setup_classes import MetricsCommand, FormatCommand, ImportFormatCommand, LintCommand, FixCommand, \
+from setup_classes import MetricsCommand, FormatCommand, ImportFormatCommand, LintCommand, FixCommand, \
     TypeCheckCommand
 
 setup(
