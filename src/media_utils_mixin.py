@@ -1,3 +1,4 @@
+from functools import cache
 from typing import Optional
 
 import ffmpeg
@@ -8,6 +9,7 @@ from src.types import MediaFileOrientation, WidthHeight
 
 class MediaUtilsMixin:
     @staticmethod
+    @cache
     def get_image_orientation(file_path: str) -> str:
         image = Image.open(file_path)
         exif = image.getexif()
@@ -22,6 +24,7 @@ class MediaUtilsMixin:
         )
 
     @staticmethod
+    @cache
     def get_video_orientation(path: str) -> str:
         # ffprobe needs to be installed as a package on the client OS
         metadata = ffmpeg.probe(path)
@@ -38,6 +41,7 @@ class MediaUtilsMixin:
         return MediaFileOrientation.LANDSCAPE
 
     @classmethod
+    @cache
     def get_ratio(cls, file_path: str):
         metadata = cls.get_width_height(file_path)
 
@@ -47,6 +51,7 @@ class MediaUtilsMixin:
         return width / height
 
     @staticmethod
+    @cache
     def get_width_height(file_path: str) -> Optional[WidthHeight]:
         metadata = ffmpeg.probe(file_path)
 

@@ -1,3 +1,4 @@
+from functools import cache
 from typing import Optional
 
 
@@ -17,6 +18,7 @@ class FFmpegUtilsMixin:
         )
 
     @staticmethod
+    @cache
     def get_overlay(
         position: str,
         margin_nord: Optional[int],

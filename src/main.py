@@ -61,9 +61,9 @@ if not valid_prefix(prefix):
 if output_path and not valid_output_path(output_path):
     exit(1)
 
-config_manager.set_watermark_file_path(watermark_path)
-config_manager.set_output_dir_path(output_path)
-config_manager.set_output_file_prefix(prefix)
+config_manager.watermark_file_path = watermark_path
+config_manager.output_dir_path = output_path
+config_manager.output_file_prefix = prefix
 
 media_files = get_valid_media_files(input_paths)
 watermark_files(media_files)
