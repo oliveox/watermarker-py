@@ -31,8 +31,6 @@ class File(MediaUtilsMixin):
         elif self.type == FileType.VIDEO:
             return MediaUtilsMixin.get_video_orientation(self.path)
 
-        return self.orientation
-
     @property
     @cache
     def output_file_path(self) -> str:
