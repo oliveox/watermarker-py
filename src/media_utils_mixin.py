@@ -52,14 +52,14 @@ class MediaUtilsMixin:
                 or not metadata["streams"][0]["height"]
                 or not metadata["streams"][0]["width"]
             ):
-                return
+                return None
         except IndexError:
             # TODO - decide on logging format
             logging.debug(f"No video stream found in file: [{file_path}]")
-            return
+            return None
         except KeyError:
             logging.debug(f"No rotation metadata found in file: [{file_path}]")
-            return
+            return None
 
         width = metadata["streams"][0]["width"]
         height = metadata["streams"][0]["height"]

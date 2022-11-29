@@ -31,6 +31,8 @@ def get_valid_media_files(paths: list[str]) -> list[File]:
         logging.info("Failed while validating paths")
         logging.exception(e)
 
+        return []
+
 
 def watermark_files(media_files: list[File]) -> None:
     for media_file in media_files:
@@ -48,7 +50,10 @@ def watermark_image(file: File) -> None:
 
     overlay = config_manager.get_image_watermark_overlay(orientation)
     transpose = config_manager.get_image_transpose(orientation)
+
     watermark_file_path = config_manager.watermark_file_path
+    if not watermark_file_path:
+        raise ValueError("Watermark file path is not set")
 
     watermark_scaling = file.watermark_scaling
     output_file_path = file.output_file_path
@@ -70,6 +75,9 @@ def watermark_video(file: File) -> None:
     logging.info(f"Watermarking video: {file.path}")
 
     watermark_file_path = config_manager.watermark_file_path
+    if not watermark_file_path:
+        raise ValueError("Watermark file path is not set")
+
     overlay = config_manager.video_watermark_overlay
     transpose = config_manager.video_transpose
 
