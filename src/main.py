@@ -14,7 +14,7 @@ try:
         "--i",
         "--input",
         required=True,
-        help="Input media files directory path | [Required]",
+        help="Input media files directory path",
         nargs="+",
         metavar="DIRECTORY/FILE PATH(S)",
     )
@@ -22,7 +22,7 @@ try:
         "--w",
         "--watermark",
         required=True,
-        help="Watermark file path | [Required]",
+        help="Watermark file path",
         nargs=1,
         metavar="WATERMARK PATH",
     )
@@ -30,7 +30,7 @@ try:
         "--p",
         "--prefix",
         required=True,
-        help="Prefix of the new file. OutputFilename = {prefix}{InputFilename} | [Required]",
+        help="Prefix of the new file. OutputFilename = {prefix}{InputFilename}",
         nargs=1,
         metavar="OUTPUT FILENAME PREFIX",
     )
@@ -38,7 +38,7 @@ try:
         "--o",
         "--output",
         required=False,
-        help="Output watermarked files drectory. If path doesn't exist, it will be created | [Optional]",
+        help="Output watermarked files drectory. If path doesn't exist, it will be created",
         nargs=1,
         metavar="OUTPUT FILE(S) PATH",
     )
