@@ -1,3 +1,4 @@
+import logging
 import os
 import shlex
 import subprocess
@@ -21,13 +22,14 @@ def get_valid_media_files(paths: list[str]) -> list[File]:
                     elif entry.is_dir():
                         get_valid_media_files([entry.path])
                     else:
-                        print(
-                            f"Warning. Path nor directory nor file. Skipping path: {path}"
+                        logging.warning(
+                            f"Path nor directory nor file. Skipping it. Path: {entry.path}"
                         )
 
         return valid_media_files
     except OSError as e:
-        print(f"Failed to validate paths. Error: {e}")
+        logging.info("Failed while validating paths")
+        logging.exception(e)
 
 
 def watermark_files(media_files: list[File]) -> None:
@@ -35,11 +37,12 @@ def watermark_files(media_files: list[File]) -> None:
         try:
             watermark_file(media_file)
         except Exception as e:
-            print(f"Failed to watermark file: {media_file.path}. Error: {e}")
+            logging.info(f"Failed to watermark file. Skipping: {media_file.path}")
+            logging.exception(e)
 
 
 def watermark_image(file: File) -> None:
-    print(f"Watermarking image: {file.path}")
+    logging.info(f"Watermarking image: {file.path}")
 
     orientation = file.orientation
 
@@ -58,11 +61,13 @@ def watermark_image(file: File) -> None:
         transpose=transpose,
         watermark_scaling=watermark_scaling,
     )
-    subprocess.run(shlex.split(command))
+    subprocess.run(
+        shlex.split(command), stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+    )
 
 
 def watermark_video(file: File) -> None:
-    print(f"Watermarking video: {file.path}")
+    logging.info(f"Watermarking video: {file.path}")
 
     watermark_file_path = config_manager.watermark_file_path
     overlay = config_manager.video_watermark_overlay
@@ -79,27 +84,28 @@ def watermark_video(file: File) -> None:
         transpose=transpose,
         watermark_scaling=watermark_scaling,
     )
-    subprocess.run(shlex.split(command))
+    subprocess.run(
+        shlex.split(command), stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+    )
 
 
 def watermark_file(file: File) -> None:
-    file_type = file.type
-    if file_type == FileType.IMAGE:
+    if file.type == FileType.IMAGE:
         watermark_image(file)
-    elif file_type == FileType.VIDEO:
+    elif file.type == FileType.VIDEO:
         watermark_video(file)
     else:
-        print(f"Warning. Unknown file type. Skipping file: {file.path}")
+        raise Exception(f"Invalid file type: {file.type}")
 
 
 def valid_media_file(path: str) -> bool:
     kind = filetype.guess(path)
     if kind is None:
-        print(f"Cannot guess file type for: {path}")
+        logging.debug(f"Cannot find file type for: {path}")
         return False
 
     if not kind.mime.startswith("image") and not kind.mime.startswith("video"):
-        print(f"Invalid media file: [{path}]. Mime: [{kind.mime}]")
+        logging.debug(f"Invalid media file: [{path}]. Mime: [{kind.mime}]")
         return False
 
     return True

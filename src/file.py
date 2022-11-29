@@ -23,6 +23,8 @@ class File(MediaUtilsMixin):
         elif kind.mime.startswith("video"):
             return FileType.VIDEO
 
+        return
+
     @property
     @cache
     def orientation(self):
@@ -38,25 +40,19 @@ class File(MediaUtilsMixin):
         prefix = config_manager.output_file_prefix
         basename = os.path.basename(self.path)
 
-        if not prefix:
-            prefix = "watermarked_"
-
         return os.path.join(output_dir_path, f"{prefix}{basename}")
 
     @property
     @cache
     def watermark_scaling(self):
-        watermark_image_ratio = MediaUtilsMixin.get_ratio(
-            config_manager.watermark_file_path
-        )
         watermark_relative_sizes = config_manager.watermark_relative_size
 
-        metadata = MediaUtilsMixin.get_width_height(self.path)
-        if not metadata:
-            raise
-
-        width = metadata["width"]
-        height = metadata["height"]
+        width_height = MediaUtilsMixin.get_width_height(self.path)
+        if not width_height:
+            raise Exception(f"Cannot get width and height for: {self.path}")
+        width = width_height["width"]
+        height = width_height["height"]
+        watermark_image_ratio = width / height
 
         if self.orientation == MediaFileOrientation.LANDSCAPE:
             watermark_height = (
@@ -75,7 +71,6 @@ class File(MediaUtilsMixin):
             )
             watermark_height = watermark_width / watermark_image_ratio
         else:
-            print(f"Invalid orientation: {self.orientation}")
-            return
+            raise Exception(f"Unknown orientation: {self.orientation}")
 
         return f"[1:v] scale={watermark_width}:{watermark_height} [wtrmrk];"

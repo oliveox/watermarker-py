@@ -1,3 +1,4 @@
+import logging
 from functools import cache
 from typing import Optional
 
@@ -28,7 +29,7 @@ class FFmpegUtilsMixin:
     ) -> str:
         overlay = ""
         if position not in ["NE", "NC", "NW", "SE", "SC", "SW", "C", "CE", "CW"]:
-            print(f"Invalid watermark position: {position}")
+            logging.debug(f"Invalid watermark position: {position}")
 
         if not margin_nord:
             margin_nord = 0
@@ -99,6 +100,6 @@ class FFmpegUtilsMixin:
                 f":(main_h/2-overlay_h/2{get_vertical_margins(margin_nord, margin_south)})"
             )
         else:
-            print(f"Invalid watermark position: {position}")
+            logging.debug(f"Invalid watermark position: {position}")
 
         return f"overlay={overlay}"

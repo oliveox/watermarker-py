@@ -1,4 +1,5 @@
 import configparser
+import logging
 from functools import cache
 
 from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
@@ -79,7 +80,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
                 try:
                     value = int(value)
                 except ValueError:
-                    print(f"Failed to parse {option} to int. Value: {value}")
+                    logging.debug(f"Failed to parse {option} to int. Value: {value}")
 
             items[option] = value
 
@@ -94,6 +95,8 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
             return f"[0:v][wtrmrk]{overlay}"
         elif file_orientation == MediaFileOrientation.PORTRAIT:
             return f"[mediaFile][wtrmrk]{overlay}"
+        else:
+            raise ValueError(f"Invalid orientation: {file_orientation}")
 
     @property
     def video_watermark_overlay(self):
@@ -109,6 +112,8 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
             return ""
         elif orientation == MediaFileOrientation.PORTRAIT:
             return "[0:v]transpose=2 [mediaFile],"
+        else:
+            raise ValueError(f"Invalid orientation: {orientation}")
 
 
 config_manager = _ConfigManager()
