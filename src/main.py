@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 
 from src.cli_validation import (valid_input_paths, valid_output_path,
                                 valid_prefix, valid_watermark_file)
@@ -56,16 +57,16 @@ try:
     )
 
     if not valid_input_paths(input_paths):
-        exit(1)
+        exit(os.EX_DATAERR)
 
     if not valid_watermark_file(watermark_path):
-        exit(1)
+        exit(os.EX_DATAERR)
 
     if not valid_prefix(prefix):
-        exit(1)
+        exit(os.EX_DATAERR)
 
     if output_path and not valid_output_path(output_path):
-        exit(1)
+        exit(os.EX_DATAERR)
 
     config_manager.watermark_file_path = watermark_path
     config_manager.output_dir_path = output_path
@@ -74,7 +75,7 @@ try:
     media_files = get_valid_media_files(input_paths)
     watermark_files(media_files)
 
-    exit(0)
+    exit(os.EX_OK)
 except Exception as e:
     logging.info("Unexpected error occurred")
     logging.exception(e)
