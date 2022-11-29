@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import TypedDict
 
 
@@ -6,14 +7,14 @@ class WidthHeight(TypedDict):
     height: int
 
 
-class FileType:
+class FileType(Enum):
     IMAGE = "image"
     VIDEO = "video"
     AUDIO = "audio"
     UNKNOWN = "unknown"
 
 
-class MediaFileOrientation:
+class MediaFileOrientation(Enum):
     PORTRAIT = "portrait"
     LANDSCAPE = "landscape"
 
