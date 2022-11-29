@@ -22,6 +22,10 @@ def valid_watermark_file(file_path: str) -> bool:
         logging.info("Watermark file path doesn't exist")
         return False
 
+    if not os.path.isfile(file_path):
+        logging.info("Watermark path is not a file")
+        return False
+
     kind = filetype.guess(file_path)
     if kind is None:
         logging.info("Cannot determine watermark file type")
