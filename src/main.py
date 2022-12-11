@@ -1,11 +1,5 @@
 import argparse
-import logging
 import os
-
-from src.cli_validation import (valid_input_paths, valid_output_path,
-                                valid_prefix, valid_watermark_file)
-from src.config import config_manager
-from utils import get_valid_media_files, watermark_files
 
 try:
     parser = argparse.ArgumentParser(
@@ -43,7 +37,13 @@ try:
         nargs=1,
         metavar="OUTPUT FILE(S) PATH",
     )
-    # TODO - maybe also support files for output (have to check if input is only one file)
+    parser.add_argument(
+        "--v",
+        "--verbose",
+        required=False,
+        help="Display detailed processing information",
+        action="store_true",
+    )
 
     args = parser.parse_args()
 
@@ -52,9 +52,13 @@ try:
     prefix = args.p[0]
     output_path = args.o[0] if args.o else None
 
-    logging.basicConfig(
-        format="%(asctime)s - %(message)s", datefmt="%H:%M:%S", level=logging.INFO
-    )
+    is_verbose = args.v
+    os.environ["WATERMARKER_VERBOSE"] = str(is_verbose)
+
+    from src.cli_validation import (valid_input_paths, valid_output_path,
+                                    valid_prefix, valid_watermark_file)
+    from src.config import config_manager
+    from utils import get_valid_media_files, watermark_files
 
     if not valid_input_paths(input_paths):
         exit(os.EX_DATAERR)
@@ -77,5 +81,5 @@ try:
 
     exit(os.EX_OK)
 except Exception as e:
-    logging.info("Unexpected error occurred")
-    logging.exception(e)
+    print("Unexpected error occurred")
+    print(e)

@@ -33,7 +33,6 @@ pycodestyle==2.9.1
 pydot==1.4.2
 pyflakes==2.5.0
 Pygments==2.13.0
-pynguin==0.27.0
 pyparsing==3.0.9
 pytest==7.2.0
 PyYAML==6.0

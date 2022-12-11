@@ -2,9 +2,9 @@ import configparser
 from functools import cache
 from typing import Optional
 
+from src.custom_types import MediaFileOrientation, WatermarkRelativeSize
 from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
 from src.media_utils_mixin import MediaUtilsMixin
-from src.types import MediaFileOrientation, WatermarkRelativeSize
 
 
 class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):

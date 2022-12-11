@@ -1,17 +1,17 @@
-import logging
 from functools import cache
 from typing import Optional
 
 import ffmpeg
 from PIL import Image
 
-from src.types import MediaFileOrientation, WidthHeight
+from logger import logger
+from src.custom_types import MediaFileOrientation, WidthHeight
 
 
 class MediaUtilsMixin:
     @staticmethod
     @cache
-    def get_image_orientation(file_path: str) -> str:
+    def get_image_orientation(file_path: str) -> MediaFileOrientation:
         image = Image.open(file_path)
         exif = image.getexif()
         orientation = exif.get(274, None)
@@ -26,17 +26,16 @@ class MediaUtilsMixin:
 
     @staticmethod
     @cache
-    def get_video_orientation(path: str) -> str:
+    def get_video_orientation(path: str) -> MediaFileOrientation:
         # ffprobe needs to be installed as a package on the client OS
         metadata = ffmpeg.probe(path)
         try:
             rotation = metadata["streams"][0]["tags"]["rotate"]  # noqa: F841
-            # TODO - find video with rotate data
+            # TODO - find test video with rotatian data
         except IndexError:
-            # TODO - decide on logging format
-            logging.debug(f"No video stream found in video file: [{path}]")
+            logger.debug(f"No video stream found in video file: [{path}]")
         except KeyError:
-            logging.debug(f"No rotation metadata found in video file: [{path}]")
+            logger.debug(f"No rotation metadata found in video file: [{path}]")
 
         # docs - will assume landscape if orientation == None (no available metadata)
         return MediaFileOrientation.LANDSCAPE
@@ -54,11 +53,10 @@ class MediaUtilsMixin:
             ):
                 return None
         except IndexError:
-            # TODO - decide on logging format
-            logging.debug(f"No video stream found in file: [{file_path}]")
+            logger.debug(f"No video stream found in file: [{file_path}]")
             return None
         except KeyError:
-            logging.debug(f"No rotation metadata found in file: [{file_path}]")
+            logger.debug(f"No rotation metadata found in file: [{file_path}]")
             return None
 
         width = metadata["streams"][0]["width"]
