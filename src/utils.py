@@ -1,11 +1,11 @@
 import os
 import shlex
 import subprocess
-from typing import List
+from typing import List, Union
 
 from filetype import filetype
 
-from logger import logger
+from logger import logger, verbosity
 from src.config import config_manager
 from src.custom_types import FileType
 from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
@@ -67,9 +67,8 @@ def watermark_image(file: File) -> None:
         transpose=transpose,
         watermark_scaling=watermark_scaling,
     )
-    subprocess.run(
-        shlex.split(command), stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
-    )
+
+    run_command(shlex.split(command))
 
 
 def watermark_video(file: File) -> None:
@@ -93,9 +92,31 @@ def watermark_video(file: File) -> None:
         transpose=transpose,
         watermark_scaling=watermark_scaling,
     )
-    subprocess.run(
-        shlex.split(command), stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
-    )
+
+    run_command(shlex.split(command))
+
+
+def run_command(command: Union[str, list]) -> None:
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+    with open("logs.log", "a") as log_file:
+        if verbosity:
+            logger.debug("\n\n############ FFmpeg logs START ############\n\n")
+            # logs on all handlers
+            for line in proc.stdout:
+                logger.debug(line.decode("utf-8").replace("\n", ""))
+        else:
+            log_file.write("\n\n############ FFmpeg logs START ############\n\n")
+            # by default log file contains all logs hence log only in the file
+            for line in proc.stdout:
+                log_file.write(line.decode("utf-8"))
+
+        if verbosity:
+            logger.debug("\n\n############ FFmpeg logs END ############\n\n")
+        else:
+            log_file.write("\n\n############ FFmpeg logs END ############\n\n")
+
+    proc.wait()
 
 
 def watermark_file(file: File) -> None:

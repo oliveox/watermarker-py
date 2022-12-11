@@ -12,6 +12,7 @@ file_handler.setFormatter(file_format)
 
 logger.addHandler(file_handler)
 
+verbosity = None
 try:
     verbosity = eval(os.environ["WATERMARKER_VERBOSE"])
 except (KeyError, SyntaxError, NameError, TypeError) as e:
