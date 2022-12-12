@@ -23,11 +23,12 @@ def get_valid_media_files(paths: List[str], root_node: str = None, root_iteratio
                 with os.scandir(path) as it:
                     for entry in it:
                         if entry.is_file() and valid_media_file(entry.path):
-                            if config_manager.keep_output_tree:
-                                output_subdir = get_output_subdir(entry.path, path, root_node)
-                                valid_media_files.append(File(path=entry.path, output_subdir=output_subdir))
-                            else:
-                                valid_media_files.append(File(path=entry.path))
+                            output_subdir = (
+                                get_output_subdir(entry.path, path, root_node)
+                                if config_manager.keep_output_tree
+                                else ""
+                            )
+                            valid_media_files.append(File(path=entry.path, output_subdir=output_subdir))
                         elif entry.is_dir():
                             valid_media_files.extend(
                                 get_valid_media_files(
