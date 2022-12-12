@@ -26,30 +26,21 @@ def get_valid_media_files(
                     for entry in it:
                         if entry.is_file() and valid_media_file(entry.path):
                             if config_manager.keep_output_tree:
-                                subdir = os.path.dirname(
-                                    entry.path.replace(root_node or path, "")
+                                output_subdir = get_output_subdir(
+                                    entry.path, path, root_node
                                 )
-                                output_subdir = (
-                                    os.path.basename(root_node or path) + subdir
-                                )  # os.path.join doesn't work here
                                 valid_media_files.append(
                                     File(path=entry.path, output_subdir=output_subdir)
                                 )
                             else:
                                 valid_media_files.append(File(path=entry.path))
                         elif entry.is_dir():
-                            if root_iteration:
-                                valid_media_files.extend(
-                                    get_valid_media_files(
-                                        paths=[entry.path], root_node=path
-                                    )
+                            valid_media_files.extend(
+                                get_valid_media_files(
+                                    paths=[entry.path],
+                                    root_node=path if root_iteration else root_node,
                                 )
-                            else:
-                                valid_media_files.extend(
-                                    get_valid_media_files(
-                                        paths=[entry.path], root_node=root_node
-                                    )
-                                )
+                            )
                         else:
                             logger.warning(
                                 f"Path is not directory nor file. Skipping it. Path: {entry.path}"
@@ -63,6 +54,13 @@ def get_valid_media_files(
         logger.exception(e)
 
     return valid_media_files
+
+
+def get_output_subdir(file_path, reference_path, root_node):
+    subdir = os.path.dirname(file_path.replace(root_node or reference_path, ""))
+
+    # os.path.join doesn't work here
+    return os.path.basename(root_node or reference_path) + subdir
 
 
 def watermark_files(media_files: list[File]) -> None:
