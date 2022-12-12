@@ -13,8 +13,8 @@ from src.file import File
 
 
 def get_valid_media_files(paths: List[str]) -> list[File]:
+    valid_media_files: list[File] = []
     try:
-        valid_media_files: list[File] = []
         for path in paths:
             # os.scandir is faster than os.listdir
             with os.scandir(path) as it:
@@ -27,13 +27,11 @@ def get_valid_media_files(paths: List[str]) -> list[File]:
                         logger.warning(
                             f"Path is not directory nor file. Skipping it. Path: {entry.path}"
                         )
-
-        return valid_media_files
     except OSError as e:
         logger.info("Failed while validating paths")
         logger.exception(e)
 
-        return []
+    return valid_media_files
 
 
 def watermark_files(media_files: list[File]) -> None:
