@@ -11,7 +11,6 @@ try:
         required=True,
         help="Input media files directory path",
         nargs="+",
-        metavar="DIRECTORY/FILE PATH(S)",
     )
     parser.add_argument(
         "--w",
@@ -19,7 +18,6 @@ try:
         required=True,
         help="Watermark file path",
         nargs=1,
-        metavar="WATERMARK PATH",
         type=str,
     )
     parser.add_argument(
@@ -28,7 +26,6 @@ try:
         required=True,
         help="Prefix of the new file. OutputFilename = {prefix}{InputFilename}",
         nargs=1,
-        metavar="OUTPUT FILENAME PREFIX",
         type=str,
     )
     parser.add_argument(
@@ -37,7 +34,6 @@ try:
         required=False,
         help="Output watermarked files drectory. If path doesn't exist, it will be created",
         nargs=1,
-        metavar="OUTPUT DIRECTORY PATH",
         type=str,
     )
     parser.add_argument(
@@ -46,7 +42,6 @@ try:
         required=False,
         help="Set level of verbosity. 1 = Debug logs ; 2 = 1 + FFmpeg logs",
         nargs=1,
-        metavar="VERBOSITY LEVEL",
         type=int,
     )
     parser.add_argument(
