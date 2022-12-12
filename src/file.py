@@ -11,14 +11,24 @@ from src.media_utils_mixin import MediaUtilsMixin
 
 
 class File(MediaUtilsMixin):
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, output_subdir: str = "") -> None:
         self._watermark_scaling = None
         self._output_file_path = None
+
         self.path = path
+        self._output_subdir = output_subdir
+
+    @property
+    def output_subdir(self) -> str:
+        return self._output_subdir
+
+    @output_subdir.setter
+    def output_subdir(self, value: str) -> None:
+        self._output_subdir = value
 
     @property
     @cache
-    def type(self) -> Optional[str]:
+    def type(self) -> FileType | None:
         kind = filetype.guess(self.path)
         if kind.mime.startswith("image"):
             return FileType.IMAGE
@@ -47,7 +57,7 @@ class File(MediaUtilsMixin):
         output_dir_path = config_manager.output_dir_path
         basename = os.path.basename(self.path)
 
-        return os.path.join(output_dir_path, f"{prefix}{basename}")
+        return os.path.join(output_dir_path, self.output_subdir, f"{prefix}{basename}")
 
     @property
     @cache

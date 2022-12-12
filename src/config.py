@@ -12,6 +12,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     video_transpose = ""
 
     def __init__(self) -> None:
+        self._keep_output_tree = None
         self._output_file_prefix: Optional[str] = None
         self._watermark_file_path: Optional[str] = None
         self._output_dir_path: Optional[str] = None
@@ -21,6 +22,14 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
 
     def get(self, section: str, key: str) -> str:
         return self.config.get(section, key)
+
+    @property
+    def keep_output_tree(self) -> Optional[bool]:
+        return self._keep_output_tree
+
+    @keep_output_tree.setter
+    def keep_output_tree(self, keep_output_tree: bool) -> None:
+        self._keep_output_tree = keep_output_tree
 
     @property
     def output_file_prefix(self) -> Optional[str]:
