@@ -99,12 +99,3 @@ except Exception as e:
     print("Unexpected error occurred")
     print(e)
     exit(os.EX_SOFTWARE)
-
-
-def valid_verbosity_value(verbosity_level: str) -> bool:
-    allowed_verbosity_values = [1, 2]
-    if verbosity_level not in allowed_verbosity_values:
-        print(f"Invalid verbosity value. Allowed values: {allowed_verbosity_values}")
-        return False
-
-    return True
