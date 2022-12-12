@@ -2,9 +2,7 @@ import argparse
 import os
 
 try:
-    parser = argparse.ArgumentParser(
-        prog="watermarker", description="Add watermark to images and videos"
-    )
+    parser = argparse.ArgumentParser(prog="watermarker", description="Add watermark to images and videos")
     parser.add_argument(
         "--i",
         "--input",

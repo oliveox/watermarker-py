@@ -72,20 +72,10 @@ class File(MediaUtilsMixin):
         media_file_ratio = width / height
 
         if self.orientation == MediaFileOrientation.LANDSCAPE:
-            watermark_height = (
-                height
-                * watermark_relative_sizes[
-                    WatermarkRelativeSize.WATERMARK_TO_HEIGHT_RATIO
-                ]
-            )
+            watermark_height = height * watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_TO_HEIGHT_RATIO]
             watermark_width = media_file_ratio * watermark_height
         elif self.orientation == MediaFileOrientation.PORTRAIT:
-            watermark_width = (
-                width
-                * watermark_relative_sizes[
-                    WatermarkRelativeSize.WATERMARK_TO_WIDTH_RATIO
-                ]
-            )
+            watermark_width = width * watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_TO_WIDTH_RATIO]
             watermark_height = watermark_width / media_file_ratio
         else:
             raise Exception(f"Unknown orientation: {self.orientation}")

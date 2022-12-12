@@ -49,9 +49,7 @@ def valid_prefix(prefix: str) -> bool:
         return False
 
     if not all(c in whitelist_chars for c in prefix):
-        logger.info(
-            f"Prefix contains invalid characters. Allowed characters: [{whitelist_chars}]"
-        )
+        logger.info(f"Prefix contains invalid characters. Allowed characters: [{whitelist_chars}]")
         return False
 
     return True

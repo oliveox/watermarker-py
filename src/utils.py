@@ -12,9 +12,7 @@ from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
 from src.file import File
 
 
-def get_valid_media_files(
-    paths: List[str], root_node: str = None, root_iteration: bool = False
-) -> list[File]:
+def get_valid_media_files(paths: List[str], root_node: str = None, root_iteration: bool = False) -> list[File]:
     valid_media_files: list[File] = []
     try:
         for path in paths:
@@ -26,12 +24,8 @@ def get_valid_media_files(
                     for entry in it:
                         if entry.is_file() and valid_media_file(entry.path):
                             if config_manager.keep_output_tree:
-                                output_subdir = get_output_subdir(
-                                    entry.path, path, root_node
-                                )
-                                valid_media_files.append(
-                                    File(path=entry.path, output_subdir=output_subdir)
-                                )
+                                output_subdir = get_output_subdir(entry.path, path, root_node)
+                                valid_media_files.append(File(path=entry.path, output_subdir=output_subdir))
                             else:
                                 valid_media_files.append(File(path=entry.path))
                         elif entry.is_dir():
@@ -42,13 +36,9 @@ def get_valid_media_files(
                                 )
                             )
                         else:
-                            logger.warning(
-                                f"Path is not directory nor file. Skipping it. Path: {entry.path}"
-                            )
+                            logger.warning(f"Path is not directory nor file. Skipping it. Path: {entry.path}")
             else:
-                logger.warning(
-                    f"Path is not directory nor file. Skipping it. Path: {entry.path}"
-                )
+                logger.warning(f"Path is not directory nor file. Skipping it. Path: {entry.path}")
     except OSError as e:
         logger.info("Failed while validating paths")
         logger.exception(e)

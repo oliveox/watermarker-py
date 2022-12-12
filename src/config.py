@@ -89,21 +89,15 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
                 try:
                     int_value = int(value)
                 except ValueError:
-                    raise ValueError(
-                        f"Failed to parse watermark margin {option} to int. Value: {value}"
-                    )
+                    raise ValueError(f"Failed to parse watermark margin {option} to int. Value: {value}")
 
             items[option] = int_value
 
         return items
 
     @cache
-    def get_image_watermark_overlay(
-        self, file_orientation: MediaFileOrientation
-    ) -> str:
-        overlay = FFmpegUtilsMixin.get_overlay(
-            position=self.watermark_position, **self.watermark_margins
-        )
+    def get_image_watermark_overlay(self, file_orientation: MediaFileOrientation) -> str:
+        overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **self.watermark_margins)
         if file_orientation == MediaFileOrientation.LANDSCAPE:
             return f"[0:v][wtrmrk]{overlay}"
         elif file_orientation == MediaFileOrientation.PORTRAIT:
@@ -113,9 +107,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
 
     @property
     def video_watermark_overlay(self) -> str:
-        overlay = FFmpegUtilsMixin.get_overlay(
-            position=self.watermark_position, **self.watermark_margins
-        )
+        overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **self.watermark_margins)
 
         return f"[0:v][wtrmrk]{overlay}"
 
