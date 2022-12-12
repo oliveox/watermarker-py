@@ -16,12 +16,13 @@ def get_valid_media_files(paths: List[str]) -> list[File]:
     try:
         valid_media_files: list[File] = []
         for path in paths:
+            # os.scandir is faster than os.listdir
             with os.scandir(path) as it:
                 for entry in it:
                     if entry.is_file() and valid_media_file(entry.path):
                         valid_media_files.append(File(entry.path))
                     elif entry.is_dir():
-                        get_valid_media_files([entry.path])
+                        valid_media_files.extend(get_valid_media_files([entry.path]))
                     else:
                         logger.warning(
                             f"Path is not directory nor file. Skipping it. Path: {entry.path}"
@@ -98,20 +99,21 @@ def watermark_video(file: File) -> None:
 
 def run_command(command: Union[str, list]) -> None:
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    display_commands_output = verbosity == 2
 
     with open("logs.log", "a") as log_file:
-        if verbosity:
+        if display_commands_output:
             logger.debug("\n\n############ FFmpeg logs START ############\n\n")
-            # logs on all handlers
+            # log using on all handlers
             for line in proc.stdout:
                 logger.debug(line.decode("utf-8").replace("\n", ""))
         else:
             log_file.write("\n\n############ FFmpeg logs START ############\n\n")
-            # by default log file contains all logs hence log only in the file
+            # by default log file contains all logs (debug) hence logging only to file
             for line in proc.stdout:
                 log_file.write(line.decode("utf-8"))
 
-        if verbosity:
+        if display_commands_output:
             logger.debug("\n\n############ FFmpeg logs END ############\n\n")
         else:
             log_file.write("\n\n############ FFmpeg logs END ############\n\n")

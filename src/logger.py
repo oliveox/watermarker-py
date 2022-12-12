@@ -16,8 +16,7 @@ verbosity = None
 try:
     verbosity = eval(os.environ["WATERMARKER_VERBOSE"])
 except (KeyError, SyntaxError, NameError, TypeError) as e:
-    verbosity = False
-    logger.exception("Invalid verbosity value. Defaulting to False", e)
+    logger.exception("Invalid verbosity level value. Defaulting to non-verbose", e)
 
 logging_level = logging.DEBUG if verbosity else logging.INFO
 logger.setLevel(logging_level)

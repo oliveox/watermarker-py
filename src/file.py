@@ -56,10 +56,10 @@ class File(MediaUtilsMixin):
 
         width_height = MediaUtilsMixin.get_width_height(self.path)
         if not width_height:
-            raise Exception(f"Cannot get width and height for: {self.path}")
+            raise Exception("Cannot get width and height for media file", self.path)
         width = width_height["width"]
         height = width_height["height"]
-        watermark_image_ratio = width / height
+        media_file_ratio = width / height
 
         if self.orientation == MediaFileOrientation.LANDSCAPE:
             watermark_height = (
@@ -68,7 +68,7 @@ class File(MediaUtilsMixin):
                     WatermarkRelativeSize.WATERMARK_TO_HEIGHT_RATIO
                 ]
             )
-            watermark_width = watermark_image_ratio * watermark_height
+            watermark_width = media_file_ratio * watermark_height
         elif self.orientation == MediaFileOrientation.PORTRAIT:
             watermark_width = (
                 width
@@ -76,7 +76,7 @@ class File(MediaUtilsMixin):
                     WatermarkRelativeSize.WATERMARK_TO_WIDTH_RATIO
                 ]
             )
-            watermark_height = watermark_width / watermark_image_ratio
+            watermark_height = watermark_width / media_file_ratio
         else:
             raise Exception(f"Unknown orientation: {self.orientation}")
 

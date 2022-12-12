@@ -20,6 +20,7 @@ try:
         help="Watermark file path",
         nargs=1,
         metavar="WATERMARK PATH",
+        type=str,
     )
     parser.add_argument(
         "--p",
@@ -28,6 +29,7 @@ try:
         help="Prefix of the new file. OutputFilename = {prefix}{InputFilename}",
         nargs=1,
         metavar="OUTPUT FILENAME PREFIX",
+        type=str,
     )
     parser.add_argument(
         "--o",
@@ -36,13 +38,16 @@ try:
         help="Output watermarked files drectory. If path doesn't exist, it will be created",
         nargs=1,
         metavar="OUTPUT FILE(S) PATH",
+        type=str,
     )
     parser.add_argument(
         "--v",
         "--verbose",
         required=False,
-        help="Display detailed processing information",
-        action="store_true",
+        help="Set level of verbosity. 1 = Debug logs ; 2 = 1 + FFmpeg logs",
+        nargs=1,
+        metavar="VERBOSITY LEVEL",
+        type=int,
     )
 
     args = parser.parse_args()
@@ -51,10 +56,16 @@ try:
     watermark_path = args.w[0]
     prefix = args.p[0]
     output_path = args.o[0] if args.o else None
+    verbosity_level = args.v[0]
 
-    is_verbose = args.v
-    os.environ["WATERMARKER_VERBOSE"] = str(is_verbose)
+    allowed_verbosity_values = [1, 2]
+    if verbosity_level not in allowed_verbosity_values:
+        print(f"Invalid verbosity value. Allowed values: {allowed_verbosity_values}")
+        exit(os.EX_DATAERR)
 
+    os.environ["WATERMARKER_VERBOSE"] = str(verbosity_level)
+
+    # setup logging env var before importing other libraries
     from src.cli_validation import (valid_input_paths, valid_output_path,
                                     valid_prefix, valid_watermark_file)
     from src.config import config_manager
@@ -83,3 +94,14 @@ try:
 except Exception as e:
     print("Unexpected error occurred")
     print(e)
+    exit(os.EX_SOFTWARE)
+
+
+def valid_verbosity_value(verbosity_level: str) -> bool:
+
+    allowed_verbosity_values = [1, 2]
+    if verbosity_level not in allowed_verbosity_values:
+        print(f"Invalid verbosity value. Allowed values: {allowed_verbosity_values}")
+        return False
+
+    return True
