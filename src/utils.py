@@ -1,5 +1,4 @@
 import os
-import shlex
 import subprocess
 from typing import List, Union
 
@@ -91,7 +90,7 @@ def watermark_image(file: File) -> None:
         watermark_scaling=watermark_scaling,
     )
 
-    run_command(shlex.split(command))
+    run_command(command)
 
 
 def watermark_video(file: File) -> None:
@@ -118,10 +117,11 @@ def watermark_video(file: File) -> None:
         watermark_scaling=watermark_scaling,
     )
 
-    run_command(shlex.split(command))
+    run_command(command)
 
 
 def run_command(command: Union[str, list]) -> None:
+    logger.debug(f"Running command: {command}")
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     display_commands_output = verbosity == 2
 

@@ -13,11 +13,17 @@ class FFmpegUtilsMixin:
         transpose: str,
         overlay: str,
         watermark_scaling: str,
-    ) -> str:
-        return (
-            f"ffmpeg -y -i {input_file_path} -i {watermark_path} "
-            f'-filter_complex "{transpose}{watermark_scaling}{overlay}" "{output_file_path}"'
-        )
+    ) -> list[str]:
+        return [
+            "ffmpeg",
+            "-i",
+            input_file_path,
+            "-i",
+            watermark_path,
+            "-filter_complex",
+            f"{transpose}{watermark_scaling}{overlay}",
+            output_file_path,
+        ]
 
     @staticmethod
     @cache
