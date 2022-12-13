@@ -59,6 +59,7 @@ def watermark_files(media_files: list[File]) -> None:
             logger.info(f"\nWatermarking {media_file.path}")
             logger.debug(media_file)
             watermark_file(media_file)
+            logger.debug("") # empty line after each file for better readability
         except Exception as e:
             logger.info("Watermarking process failed. Skipping ...")
             logger.exception(e)
@@ -66,6 +67,7 @@ def watermark_files(media_files: list[File]) -> None:
 
 def watermark_image(file: File) -> None:
     orientation = file.orientation
+    logger.debug(f"Orientation: {orientation}")
 
     overlay = config_manager.get_image_watermark_overlay(orientation)
     transpose = config_manager.get_image_transpose(orientation)
