@@ -12,8 +12,13 @@ def valid_input_paths(paths: List[str]) -> bool:
         logger.info("No input paths specified")
         return False
 
-    if not all(os.path.exists(i) for i in paths):
-        logger.info("Input contains a path that doesn't exist")
+    invalid_paths: list[str] = []
+    for path in paths:
+        if not os.path.exists(path):
+            invalid_paths.append(path)
+
+    if len(invalid_paths):
+        logger.debug(f"These input paths don't exist: {invalid_paths}")
         return False
 
     return True
