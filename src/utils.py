@@ -58,6 +58,14 @@ def watermark_files(media_files: list[File]) -> None:
         try:
             logger.info(f"\nWatermarking {media_file.path}")
             logger.debug(media_file)
+
+            if not config_manager.overwrite and os.path.exists(
+                media_file.output_file_path
+            ):
+                logger.info(
+                    f"Output file already exists. Skipping ... "
+                )
+                continue
             watermark_file(media_file)
             logger.debug("")  # empty line after each file for better readability
         except Exception as e:
@@ -124,6 +132,11 @@ def watermark_video(file: File) -> None:
 
 def run_command(command: Union[str, list]) -> None:
     logger.debug(f"Running command: {command}")
+
+    # TODO - move this process to FFMPEGUtilsMixin - after config.py - constants separation refactor (ticket #24)
+    if config_manager.overwrite:
+        command.append("-y")
+
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     display_commands_output = verbosity == 2
 

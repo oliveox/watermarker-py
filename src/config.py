@@ -13,6 +13,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
 
     def __init__(self) -> None:
         self._keep_output_tree = None
+        self._overwrite: Optional[bool] = None
         self._output_file_prefix: Optional[str] = None
         self._watermark_file_path: Optional[str] = None
         self._output_dir_path: Optional[str] = None
@@ -30,6 +31,12 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     @keep_output_tree.setter
     def keep_output_tree(self, keep_output_tree: bool) -> None:
         self._keep_output_tree = keep_output_tree
+    def overwrite(self) -> Optional[bool]:
+        return self._overwrite
+
+    @overwrite.setter
+    def overwrite(self, overwrite: bool) -> None:
+        self._overwrite = overwrite
 
     @property
     def output_file_prefix(self) -> Optional[str]:
@@ -102,6 +109,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
             return f"[0:v][wtrmrk]{overlay}"
         elif file_orientation == MediaFileOrientation.PORTRAIT:
             return f"[mediaFile][wtrmrk]{overlay}"
+            # return f"[wtrmrk]{overlay}"
         else:
             raise ValueError(f"Invalid orientation: {file_orientation}")
 
@@ -113,6 +121,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
 
     @staticmethod
     def get_image_transpose(orientation: MediaFileOrientation) -> str:
+        # return ""
         if orientation == MediaFileOrientation.LANDSCAPE:
             return ""
         elif orientation == MediaFileOrientation.PORTRAIT:
