@@ -38,7 +38,7 @@ class MediaUtilsMixin:
 
     @staticmethod
     @cache
-    def get_width_height(file_path: str) -> Optional[WidthHeight]:
+    def get_media_file_width_height(file_path: str) -> Optional[WidthHeight]:
         metadata = ffmpeg.probe(file_path)
 
         try:

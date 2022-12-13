@@ -64,7 +64,9 @@ class File(MediaUtilsMixin):
     def watermark_scaling(self) -> str:
         watermark_relative_sizes = config_manager.watermark_relative_size
 
-        width_height = MediaUtilsMixin.get_width_height(self.path)
+        width_height = MediaUtilsMixin.get_media_file_width_height(
+            config_manager.watermark_file_path
+        )
         if not width_height:
             raise Exception("Cannot get width and height for media file", self.path)
         width = width_height["width"]
