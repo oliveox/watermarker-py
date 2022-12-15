@@ -136,6 +136,7 @@ def run_command(command: Union[str, list]) -> None:
     # TODO - move this process to FFMPEGUtilsMixin - after config.py - constants separation refactor (ticket #24)
     if config_manager.overwrite:
         command.append("-y")
+    # TODO - if not -y then possibly add -n
 
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     display_commands_output = verbosity == 2

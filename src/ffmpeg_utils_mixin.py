@@ -61,6 +61,7 @@ class FFmpegUtilsMixin:
         def get_vertical_margins(nord: int, south: int) -> str:
             return f"{get_sign(nord, False)}{get_sign(south, True)}"
 
+        # TODO - transform in a dict e.g.{"NE":(etc.)}
         if position == "NE":
             overlay = (
                 f"0{get_horizontal_margins(margin_east, margin_west)}"

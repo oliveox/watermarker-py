@@ -17,8 +17,30 @@ class MediaUtilsMixin:
         orientation = exif.get(274, None)
         if isinstance(orientation, bytes):
             orientation = orientation.decode()
-        # docs - will assume landscape if orientation == None (no available metadata)
-        return MediaFileOrientation.PORTRAIT if orientation in [5, 6, 7, 8] else MediaFileOrientation.LANDSCAPE
+
+        if orientation in [5, 6, 7, 8]:
+            return MediaFileOrientation.PORTRAIT
+        elif orientation is not None:
+            return MediaFileOrientation.LANDSCAPE
+        else:
+            # decide orientation based on image width and height
+            width_height = MediaUtilsMixin.get_media_file_width_height(file_path)
+            if not width_height:
+                raise Exception("Cannot get width and height for media file", file_path)
+            width = width_height["width"]
+            height = width_height["height"]
+
+            if width > height:
+                return MediaFileOrientation.LANDSCAPE
+            else:
+                return MediaFileOrientation.PORTRAIT
+
+        # # docs - will assume landscape if orientation == None (no available metadata)
+        # return (
+        #     MediaFileOrientation.PORTRAIT
+        #     if orientation in [5, 6, 7, 8]
+        #     else MediaFileOrientation.LANDSCAPE
+        # )
 
     @staticmethod
     @cache

@@ -108,6 +108,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
         if file_orientation == MediaFileOrientation.LANDSCAPE:
             return f"[0:v][wtrmrk]{overlay}"
         elif file_orientation == MediaFileOrientation.PORTRAIT:
+            #TODO
             return f"[mediaFile][wtrmrk]{overlay}"
             # return f"[wtrmrk]{overlay}"
         else:
@@ -122,6 +123,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     @staticmethod
     def get_image_transpose(orientation: MediaFileOrientation) -> str:
         # return ""
+        # TODO
         if orientation == MediaFileOrientation.LANDSCAPE:
             return ""
         elif orientation == MediaFileOrientation.PORTRAIT:
