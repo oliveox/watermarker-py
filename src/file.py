@@ -11,14 +11,24 @@ from src.media_utils_mixin import MediaUtilsMixin
 
 
 class File(MediaUtilsMixin):
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, output_subdir: str = "") -> None:
         self._watermark_scaling = None
         self._output_file_path = None
+
         self.path = path
+        self._output_subdir = output_subdir
+
+    @property
+    def output_subdir(self) -> str:
+        return self._output_subdir
+
+    @output_subdir.setter
+    def output_subdir(self, value: str) -> None:
+        self._output_subdir = value
 
     @property
     @cache
-    def type(self) -> Optional[str]:
+    def type(self) -> FileType | None:
         kind = filetype.guess(self.path)
         if kind.mime.startswith("image"):
             return FileType.IMAGE
@@ -47,7 +57,7 @@ class File(MediaUtilsMixin):
         output_dir_path = config_manager.output_dir_path
         basename = os.path.basename(self.path)
 
-        return os.path.join(output_dir_path, f"{prefix}{basename}")
+        return os.path.join(output_dir_path, self.output_subdir, f"{prefix}{basename}")
 
     @property
     @cache
@@ -62,20 +72,10 @@ class File(MediaUtilsMixin):
         media_file_ratio = width / height
 
         if self.orientation == MediaFileOrientation.LANDSCAPE:
-            watermark_height = (
-                height
-                * watermark_relative_sizes[
-                    WatermarkRelativeSize.WATERMARK_TO_HEIGHT_RATIO
-                ]
-            )
+            watermark_height = height * watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_TO_HEIGHT_RATIO]
             watermark_width = media_file_ratio * watermark_height
         elif self.orientation == MediaFileOrientation.PORTRAIT:
-            watermark_width = (
-                width
-                * watermark_relative_sizes[
-                    WatermarkRelativeSize.WATERMARK_TO_WIDTH_RATIO
-                ]
-            )
+            watermark_width = width * watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_TO_WIDTH_RATIO]
             watermark_height = watermark_width / media_file_ratio
         else:
             raise Exception(f"Unknown orientation: {self.orientation}")

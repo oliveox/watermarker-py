@@ -12,6 +12,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     video_transpose = ""
 
     def __init__(self) -> None:
+        self._keep_output_tree = None
         self._output_file_prefix: Optional[str] = None
         self._watermark_file_path: Optional[str] = None
         self._output_dir_path: Optional[str] = None
@@ -21,6 +22,14 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
 
     def get(self, section: str, key: str) -> str:
         return self.config.get(section, key)
+
+    @property
+    def keep_output_tree(self) -> Optional[bool]:
+        return self._keep_output_tree
+
+    @keep_output_tree.setter
+    def keep_output_tree(self, keep_output_tree: bool) -> None:
+        self._keep_output_tree = keep_output_tree
 
     @property
     def output_file_prefix(self) -> Optional[str]:
@@ -80,21 +89,15 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
                 try:
                     int_value = int(value)
                 except ValueError:
-                    raise ValueError(
-                        f"Failed to parse watermark margin {option} to int. Value: {value}"
-                    )
+                    raise ValueError(f"Failed to parse watermark margin {option} to int. Value: {value}")
 
             items[option] = int_value
 
         return items
 
     @cache
-    def get_image_watermark_overlay(
-        self, file_orientation: MediaFileOrientation
-    ) -> str:
-        overlay = FFmpegUtilsMixin.get_overlay(
-            position=self.watermark_position, **self.watermark_margins
-        )
+    def get_image_watermark_overlay(self, file_orientation: MediaFileOrientation) -> str:
+        overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **self.watermark_margins)
         if file_orientation == MediaFileOrientation.LANDSCAPE:
             return f"[0:v][wtrmrk]{overlay}"
         elif file_orientation == MediaFileOrientation.PORTRAIT:
@@ -104,9 +107,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
 
     @property
     def video_watermark_overlay(self) -> str:
-        overlay = FFmpegUtilsMixin.get_overlay(
-            position=self.watermark_position, **self.watermark_margins
-        )
+        overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **self.watermark_margins)
 
         return f"[0:v][wtrmrk]{overlay}"
 

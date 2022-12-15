@@ -2,16 +2,13 @@ import argparse
 import os
 
 try:
-    parser = argparse.ArgumentParser(
-        prog="watermarker", description="Add watermark to images and videos"
-    )
+    parser = argparse.ArgumentParser(prog="watermarker", description="Add watermark to images and videos")
     parser.add_argument(
         "--i",
         "--input",
         required=True,
         help="Input media files directory path",
         nargs="+",
-        metavar="DIRECTORY/FILE PATH(S)",
     )
     parser.add_argument(
         "--w",
@@ -19,7 +16,6 @@ try:
         required=True,
         help="Watermark file path",
         nargs=1,
-        metavar="WATERMARK PATH",
         type=str,
     )
     parser.add_argument(
@@ -28,7 +24,6 @@ try:
         required=True,
         help="Prefix of the new file. OutputFilename = {prefix}{InputFilename}",
         nargs=1,
-        metavar="OUTPUT FILENAME PREFIX",
         type=str,
     )
     parser.add_argument(
@@ -37,7 +32,6 @@ try:
         required=False,
         help="Output watermarked files drectory. If path doesn't exist, it will be created",
         nargs=1,
-        metavar="OUTPUT FILE(S) PATH",
         type=str,
     )
     parser.add_argument(
@@ -46,8 +40,14 @@ try:
         required=False,
         help="Set level of verbosity. 1 = Debug logs ; 2 = 1 + FFmpeg logs",
         nargs=1,
-        metavar="VERBOSITY LEVEL",
         type=int,
+    )
+    parser.add_argument(
+        "--k",
+        "--keep_output_tree",
+        required=False,
+        help="Keep the same directory tree for output as the input files",
+        action="store_true",
     )
 
     args = parser.parse_args()
@@ -57,6 +57,7 @@ try:
     prefix = args.p[0]
     output_path = args.o[0] if args.o else None
     verbosity_level = args.v[0]
+    keep_output_tree = args.k
 
     allowed_verbosity_values = [1, 2]
     if verbosity_level not in allowed_verbosity_values:
@@ -86,8 +87,9 @@ try:
     config_manager.watermark_file_path = watermark_path
     config_manager.output_dir_path = output_path
     config_manager.output_file_prefix = prefix
+    config_manager.keep_output_tree = keep_output_tree
 
-    media_files = get_valid_media_files(input_paths)
+    media_files = get_valid_media_files(paths=input_paths, root_iteration=True)
     watermark_files(media_files)
 
     exit(os.EX_OK)
