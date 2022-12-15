@@ -18,11 +18,7 @@ class MediaUtilsMixin:
         if isinstance(orientation, bytes):
             orientation = orientation.decode()
         # docs - will assume landscape if orientation == None (no available metadata)
-        return (
-            MediaFileOrientation.PORTRAIT
-            if orientation in [5, 6, 7, 8]
-            else MediaFileOrientation.LANDSCAPE
-        )
+        return MediaFileOrientation.PORTRAIT if orientation in [5, 6, 7, 8] else MediaFileOrientation.LANDSCAPE
 
     @staticmethod
     @cache
@@ -46,11 +42,7 @@ class MediaUtilsMixin:
         metadata = ffmpeg.probe(file_path)
 
         try:
-            if (
-                not metadata
-                or not metadata["streams"][0]["height"]
-                or not metadata["streams"][0]["width"]
-            ):
+            if not metadata or not metadata["streams"][0]["height"] or not metadata["streams"][0]["width"]:
                 return None
         except IndexError:
             logger.debug(f"No video stream found in file: [{file_path}]")

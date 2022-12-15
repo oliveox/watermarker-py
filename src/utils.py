@@ -12,28 +12,46 @@ from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
 from src.file import File
 
 
-def get_valid_media_files(paths: List[str]) -> list[File]:
+def get_valid_media_files(paths: List[str], root_node: str = None, root_iteration: bool = False) -> list[File]:
+    valid_media_files: list[File] = []
     try:
-        valid_media_files: list[File] = []
         for path in paths:
-            # os.scandir is faster than os.listdir
-            with os.scandir(path) as it:
-                for entry in it:
-                    if entry.is_file() and valid_media_file(entry.path):
-                        valid_media_files.append(File(entry.path))
-                    elif entry.is_dir():
-                        valid_media_files.extend(get_valid_media_files([entry.path]))
-                    else:
-                        logger.warning(
-                            f"Path is not directory nor file. Skipping it. Path: {entry.path}"
-                        )
-
-        return valid_media_files
+            if os.path.isfile(path):
+                valid_media_files.append(File(path=path, output_subdir=""))
+            elif os.path.isdir(path):
+                # os.scandir is faster than os.listdir
+                with os.scandir(path) as it:
+                    for entry in it:
+                        if entry.is_file() and valid_media_file(entry.path):
+                            output_subdir = (
+                                get_output_subdir(entry.path, path, root_node)
+                                if config_manager.keep_output_tree
+                                else ""
+                            )
+                            valid_media_files.append(File(path=entry.path, output_subdir=output_subdir))
+                        elif entry.is_dir():
+                            valid_media_files.extend(
+                                get_valid_media_files(
+                                    paths=[entry.path],
+                                    root_node=path if root_iteration else root_node,
+                                )
+                            )
+                        else:
+                            logger.warning(f"Path is not directory nor file. Skipping it. Path: {entry.path}")
+            else:
+                logger.warning(f"Path is not directory nor file. Skipping it. Path: {entry.path}")
     except OSError as e:
         logger.info("Failed while validating paths")
         logger.exception(e)
 
-        return []
+    return valid_media_files
+
+
+def get_output_subdir(file_path, reference_path, root_node):
+    subdir = os.path.dirname(file_path.replace(root_node or reference_path, ""))
+
+    # os.path.join doesn't work here
+    return os.path.basename(root_node or reference_path) + subdir
 
 
 def watermark_files(media_files: list[File]) -> None:
@@ -60,6 +78,10 @@ def watermark_image(file: File) -> None:
     watermark_scaling = file.watermark_scaling
     output_file_path = file.output_file_path
 
+    if config_manager.keep_output_tree:
+        # create output directory tree if it doesn't exist
+        os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
+
     command = FFmpegUtilsMixin.get_watermarking_command(
         input_file_path=file.path,
         watermark_path=watermark_file_path,
@@ -84,6 +106,10 @@ def watermark_video(file: File) -> None:
 
     watermark_scaling = file.watermark_scaling
     output_file_path = file.output_file_path
+
+    if config_manager.keep_output_tree:
+        # create output directory tree if it doesn't exist
+        os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
 
     command = FFmpegUtilsMixin.get_watermarking_command(
         input_file_path=file.path,
