@@ -31,6 +31,8 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     @keep_output_tree.setter
     def keep_output_tree(self, keep_output_tree: bool) -> None:
         self._keep_output_tree = keep_output_tree
+
+    @property
     def overwrite(self) -> Optional[bool]:
         return self._overwrite
 
