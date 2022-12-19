@@ -26,6 +26,7 @@ class MediaUtilsMixin:
             # decide orientation based on image width and height
             width_height = MediaUtilsMixin.get_media_file_width_height(file_path)
             if not width_height:
+                # TODO - flag to choose fallback orienttation if not ffprobe and not wdith height detected ?
                 raise Exception("Cannot get width and height for media file", file_path)
             width = width_height["width"]
             height = width_height["height"]
@@ -35,25 +36,48 @@ class MediaUtilsMixin:
             else:
                 return MediaFileOrientation.PORTRAIT
 
-        # # docs - will assume landscape if orientation == None (no available metadata)
-        # return (
-        #     MediaFileOrientation.PORTRAIT
-        #     if orientation in [5, 6, 7, 8]
-        #     else MediaFileOrientation.LANDSCAPE
-        # )
-
     @staticmethod
     @cache
     def get_video_orientation(path: str) -> MediaFileOrientation:
         # ffprobe needs to be installed as a package on the client OS
         metadata = ffmpeg.probe(path)
         try:
+            # mostly for mp4
             rotation = metadata["streams"][0]["tags"]["rotate"]  # noqa: F841
+            # TODO - remove this in production
+            logger.info(f"!!!!!!!!!! FOUND VIDEO WITH ROTATION: {path}")
             # TODO - find test video with rotatian data
         except IndexError:
             logger.debug("No video stream found in video file")
         except KeyError:
             logger.debug("No rotation metadata found in video file")
+
+            # check side_data_list (detected in .mp4 djiaction files)
+            try:
+                rotation = metadata["streams"][0]["side_data_list"][0]["rotation"]
+                # check if -90 or 90
+                if abs(rotation) / 90 == 1:
+                    return MediaFileOrientation.PORTRAIT
+                else:
+                    return MediaFileOrientation.LANDSCAPE
+            except KeyError:
+                logger.debug(f"No rotation metadata found in side_data_list for video file: [{path}]")
+
+            # TODO - document in docs that width / height orientation method is not precise
+            # e.g. can result in landscape for vertical videos
+
+            # determine based on width height
+            width_height = MediaUtilsMixin.get_media_file_width_height(path)
+            # TODO - flag to choose fallback orienttation if not ffprobe and not wdith height detected ?
+            if not width_height:
+                raise Exception("On detect orientation fallback method, cannot get width and height for media file",
+                                path)
+            width = width_height["width"]
+            height = width_height["height"]
+            if width > height:
+                return MediaFileOrientation.LANDSCAPE
+            else:
+                return MediaFileOrientation.PORTRAIT
 
         # docs - will assume landscape if orientation == None (no available metadata)
         return MediaFileOrientation.LANDSCAPE
