@@ -1,14 +1,17 @@
+import logging
 import os
 import subprocess
 from typing import List, Union
 
 from filetype import filetype
 
-from logger import logger, verbosity
+from logger import verbosity
 from src.config import config_manager
 from src.custom_types import FileType
 from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
 from src.file import File
+
+logger = logging.getLogger("watermarker")
 
 
 def get_valid_media_files(paths: List[str], root_node: str = None, root_iteration: bool = False) -> list[File]:

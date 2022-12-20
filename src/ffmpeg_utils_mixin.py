@@ -1,6 +1,9 @@
 from functools import cache
 from typing import Optional
 
+import logging
+logger = logging.getLogger("watermarker")
+
 
 class FFmpegUtilsMixin:
     @staticmethod
