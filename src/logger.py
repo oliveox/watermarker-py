@@ -23,10 +23,11 @@ def create_logger():
     logger.setLevel(logging.DEBUG)
 
     # set file handler first (always on debug) so that verbosity flag issues can be logged
-    file_handler = logging.FileHandler("logs.log")
+    file_handler = logging.FileHandler("logs.log", "w")
     file_handler.setLevel(logging.DEBUG)
     file_format = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     file_handler.setFormatter(file_format)
+
     logger.addHandler(file_handler)
 
     _stream_handler = logging.StreamHandler(sys.stdout)
@@ -58,10 +59,8 @@ def initialise_logger():
         if verbosity:
             # allow all levels to be logged
             _stream_handler.removeFilter(_custom_filter)
-    except (KeyError, SyntaxError, NameError, TypeError) as e:
-        logger.exception(
-            f"Could not read verbosity environment variable [{_env_var_name}]. Defaulting to non-verbose", e
-        )
+    except (KeyError, SyntaxError, NameError, TypeError):
+        logger.exception("Could not read verbosity environment variable [{_env_var_name}]. Defaulting to non-verbose")
     except AttributeError:
         logger.exception("Stream handler is None. Cannot remove filter")
 
