@@ -1,3 +1,11 @@
+def handle_uncaught_exceptions(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        print("The process was interrupted by the user")
+        # TODO - log exception
+    else:
+        print("An uncaught exception occurred")
+        # TODO - log exception
+
 import argparse
 import os
 
