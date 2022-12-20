@@ -67,7 +67,7 @@ class File(MediaUtilsMixin):
 
         watermark_width_height = MediaUtilsMixin.get_media_file_width_height(config_manager.watermark_file_path)
         if not watermark_width_height:
-            raise Exception("Cannot get width and height for media file", self.path)
+            raise Exception("Cannot get width and height for watermark file", config_manager.watermark_file_path)
         watermark_width = watermark_width_height["width"]
         watermark_height = watermark_width_height["height"]
         watermark_ratio = watermark_width / watermark_height
