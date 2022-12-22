@@ -29,9 +29,9 @@ class MediaUtilsMixin:
             rotation = metadata["streams"][0]["tags"]["rotate"]  # noqa: F841
             # TODO - find test video with rotatian data
         except IndexError:
-            logger.debug(f"No video stream found in video file")
+            logger.debug("No video stream found in video file")
         except KeyError:
-            logger.debug(f"No rotation metadata found in video file")
+            logger.debug("No rotation metadata found in video file")
 
         # docs - will assume landscape if orientation == None (no available metadata)
         return MediaFileOrientation.LANDSCAPE
@@ -45,10 +45,10 @@ class MediaUtilsMixin:
             if not metadata or not metadata["streams"][0]["height"] or not metadata["streams"][0]["width"]:
                 return None
         except IndexError:
-            logger.debug(f"No video stream found in file")
+            logger.debug("No video stream found in file")
             return None
         except KeyError:
-            logger.debug(f"No rotation metadata found in file")
+            logger.debug("No rotation metadata found in file")
             return None
 
         width = metadata["streams"][0]["width"]

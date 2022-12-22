@@ -61,7 +61,7 @@ def watermark_files(media_files: list[File]) -> None:
             logger.debug(media_file)
             watermark_file(media_file)
         except Exception as e:
-            logger.info(f"Watermarking process failed. Skipping ...")
+            logger.info("Watermarking process failed. Skipping ...")
             logger.exception(e)
 
 
