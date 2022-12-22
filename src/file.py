@@ -92,8 +92,10 @@ class File(MediaUtilsMixin):
         else:
             raise Exception(f"Unknown orientation: {self.orientation}")
 
-        logger.debug(f"Media file size: {media_file_width}x{media_file_height}")
-        logger.debug(f"Watermark scaling: {watermark_scaled_width}x{watermark_scaled_height}")
+        logger.debug(
+            f"Dimensions(WxH). File: {media_file_width}x{media_file_height}."
+            f" Watermark: {watermark_scaled_width}x{watermark_scaled_height}"
+        )
 
         return f"[1:v] scale={watermark_scaled_width}:{watermark_scaled_height} [wtrmrk];"
 
@@ -102,4 +104,3 @@ class File(MediaUtilsMixin):
             f"{self.__class__.__name__}(path={self.path}, type={self.type}, orientation={self.orientation},"
             f" output_file_path={self.output_file_path}, output_subdir={self.output_subdir})"
         )
-
