@@ -59,12 +59,8 @@ def watermark_files(media_files: list[File]) -> None:
             logger.info(f"\nWatermarking {media_file.path}")
             logger.debug(media_file)
 
-            if not config_manager.overwrite and os.path.exists(
-                media_file.output_file_path
-            ):
-                logger.info(
-                    f"Output file already exists. Skipping ... "
-                )
+            if not config_manager.overwrite and os.path.exists(media_file.output_file_path):
+                logger.info("Output file already exists. Skipping ... ")
                 continue
             watermark_file(media_file)
             logger.debug("")  # empty line after each file for better readability
@@ -75,7 +71,6 @@ def watermark_files(media_files: list[File]) -> None:
 
 def watermark_image(file: File) -> None:
     orientation = file.orientation
-    logger.debug(f"Orientation: {orientation}")
 
     overlay = config_manager.get_image_watermark_overlay(orientation)
     transpose = config_manager.get_image_transpose(orientation)
