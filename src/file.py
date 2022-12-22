@@ -81,3 +81,6 @@ class File(MediaUtilsMixin):
             raise Exception(f"Unknown orientation: {self.orientation}")
 
         return f"[1:v] scale={watermark_width}:{watermark_height} [wtrmrk];"
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(path={self.path}, type={self.type}, orientation={self.orientation}, output_file_path={self.output_file_path}, output_subdir={self.output_subdir})"
