@@ -57,15 +57,15 @@ def get_output_subdir(file_path, reference_path, root_node):
 def watermark_files(media_files: list[File]) -> None:
     for media_file in media_files:
         try:
+            logger.info(f"\nWatermarking {media_file.path}")
+            logger.debug(media_file)
             watermark_file(media_file)
         except Exception as e:
-            logger.info(f"Failed to watermark file. Skipping: {media_file.path}")
+            logger.info("Watermarking process failed. Skipping ...")
             logger.exception(e)
 
 
 def watermark_image(file: File) -> None:
-    logger.info(f"Watermarking image: {file.path}")
-
     orientation = file.orientation
 
     overlay = config_manager.get_image_watermark_overlay(orientation)
@@ -95,8 +95,6 @@ def watermark_image(file: File) -> None:
 
 
 def watermark_video(file: File) -> None:
-    logger.info(f"Watermarking video: {file.path}")
-
     watermark_file_path = config_manager.watermark_file_path
     if not watermark_file_path:
         raise ValueError("Watermark file path is not set")
