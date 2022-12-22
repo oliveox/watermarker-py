@@ -42,7 +42,6 @@ class MediaUtilsMixin:
         # ffprobe needs to be installed as a package on the client OS
         metadata = ffmpeg.probe(path)
         try:
-            # mostly for mp4
             rotation = metadata["streams"][0]["tags"]["rotate"]  # noqa: F841
             # TODO - remove this in production
             logger.info(f"!!!!!!!!!! FOUND VIDEO WITH ROTATION: {path}")
@@ -60,6 +59,13 @@ class MediaUtilsMixin:
                     return MediaFileOrientation.PORTRAIT
                 else:
                     return MediaFileOrientation.LANDSCAPE
+
+                # double check orientation based on width x height
+                # special flag if rotation found but not coherent with width x height
+
+                # UNDERLYING_ORIENTATION = based width x height
+                # DISPLAY_ORIENTATION = based on rotation metadata COMBINED with underlying_orientation
+                # e.g. -90 rotation with underlying orientation of 200x100
             except KeyError:
                 logger.debug(f"No rotation metadata found in side_data_list for video file: [{path}]")
 
@@ -70,8 +76,9 @@ class MediaUtilsMixin:
             width_height = MediaUtilsMixin.get_media_file_width_height(path)
             # TODO - flag to choose fallback orienttation if not ffprobe and not wdith height detected ?
             if not width_height:
-                raise Exception("On detect orientation fallback method, cannot get width and height for media file",
-                                path)
+                raise Exception(
+                    "On detect orientation fallback method, cannot get width and height for media file", path
+                )
             width = width_height["width"]
             height = width_height["height"]
             if width > height:
