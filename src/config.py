@@ -110,7 +110,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
         if file_orientation == MediaFileOrientation.LANDSCAPE:
             return f"[0:v][wtrmrk]{overlay}"
         elif file_orientation == MediaFileOrientation.PORTRAIT:
-            #TODO
+            # TODO
             return f"[mediaFile][wtrmrk]{overlay}"
             # return f"[wtrmrk]{overlay}"
         else:
