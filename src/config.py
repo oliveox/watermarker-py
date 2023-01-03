@@ -10,6 +10,7 @@ from src.media_utils_mixin import MediaUtilsMixin
 class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     configuration_file_path = "config.ini"
     video_transpose = ""
+    image_transpose = ""
 
     def __init__(self) -> None:
         self._keep_output_tree = None
@@ -107,31 +108,17 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     @cache
     def get_image_watermark_overlay(self, file_orientation: MediaFileOrientation) -> str:
         overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **self.watermark_margins)
-        if file_orientation == MediaFileOrientation.LANDSCAPE:
-            return f"[0:v][wtrmrk]{overlay}"
-        elif file_orientation == MediaFileOrientation.PORTRAIT:
-            # TODO
-            return f"[mediaFile][wtrmrk]{overlay}"
-            # return f"[wtrmrk]{overlay}"
-        else:
+
+        if file_orientation not in [MediaFileOrientation.LANDSCAPE, MediaFileOrientation.PORTRAIT]:
             raise ValueError(f"Invalid orientation: {file_orientation}")
+
+        return f"[0:v][wtrmrk]{overlay}"
 
     @property
     def video_watermark_overlay(self) -> str:
         overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **self.watermark_margins)
 
         return f"[0:v][wtrmrk]{overlay}"
-
-    @staticmethod
-    def get_image_transpose(orientation: MediaFileOrientation) -> str:
-        # return ""
-        # TODO
-        if orientation == MediaFileOrientation.LANDSCAPE:
-            return ""
-        elif orientation == MediaFileOrientation.PORTRAIT:
-            return "[0:v]transpose=2 [mediaFile],"
-        else:
-            raise ValueError(f"Invalid orientation: {orientation}")
 
 
 config_manager = _ConfigManager()
