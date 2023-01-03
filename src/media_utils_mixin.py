@@ -26,6 +26,7 @@ class MediaUtilsMixin:
             return MediaFileOrientation.LANDSCAPE
         else:
             # decide orientation based on image width and height
+            # TODO - remove duplication as this is also in get_video_orientation
             width_height = MediaUtilsMixin.get_media_file_width_height(file_path)
             if not width_height:
                 # TODO - flag to choose fallback orienttation if not ffprobe and not wdith height detected ?
@@ -34,7 +35,7 @@ class MediaUtilsMixin:
             width = width_height["width"]
             height = width_height["height"]
             logger.debug("Found [width:height] based orientation")
-            if width > height:
+            if width >= height:
                 return MediaFileOrientation.LANDSCAPE
             else:
                 return MediaFileOrientation.PORTRAIT
@@ -85,7 +86,7 @@ class MediaUtilsMixin:
             width = width_height["width"]
             height = width_height["height"]
             logger.debug("Found [width:height] based orientation")
-            if width > height:
+            if width >= height:
                 return MediaFileOrientation.LANDSCAPE
             else:
                 return MediaFileOrientation.PORTRAIT
