@@ -19,8 +19,10 @@ class MediaUtilsMixin:
             orientation = orientation.decode()
 
         if orientation in [5, 6, 7, 8]:
+            logger.debug("Found [exif:274] based orientation")
             return MediaFileOrientation.PORTRAIT
         elif orientation is not None:
+            logger.debug("Found [exif:274] based orientation")
             return MediaFileOrientation.LANDSCAPE
         else:
             # decide orientation based on image width and height
@@ -28,9 +30,10 @@ class MediaUtilsMixin:
             if not width_height:
                 # TODO - flag to choose fallback orienttation if not ffprobe and not wdith height detected ?
                 raise Exception("Cannot get width and height for media file", file_path)
+
             width = width_height["width"]
             height = width_height["height"]
-
+            logger.debug("Found [width:height] based orientation")
             if width > height:
                 return MediaFileOrientation.LANDSCAPE
             else:
@@ -47,13 +50,14 @@ class MediaUtilsMixin:
             logger.info(f"!!!!!!!!!! FOUND VIDEO WITH ROTATION: {path}")
             # TODO - find test video with rotatian data
         except IndexError:
-            logger.debug("No video stream found in video file")
+            logger.debug("No video stream found")
         except KeyError:
-            logger.debug("No rotation metadata found in video file")
+            logger.debug("No [stream:tags:rotate] orientation metadata found")
 
             # check side_data_list (detected in .mp4 djiaction files)
             try:
                 rotation = metadata["streams"][0]["side_data_list"][0]["rotation"]
+                logger.debug("Found [stream:side_data_list:rotation] based orientation")
                 # check if -90 or 90
                 if abs(rotation) / 90 == 1:
                     return MediaFileOrientation.PORTRAIT
@@ -67,7 +71,7 @@ class MediaUtilsMixin:
                 # DISPLAY_ORIENTATION = based on rotation metadata COMBINED with underlying_orientation
                 # e.g. -90 rotation with underlying orientation of 200x100
             except KeyError:
-                logger.debug(f"No rotation metadata found in side_data_list for video file: [{path}]")
+                logger.debug("No [stream:side_data_list:rotation] orientation metadata found")
 
             # TODO - document in docs that width / height orientation method is not precise
             # e.g. can result in landscape for vertical videos
@@ -76,11 +80,11 @@ class MediaUtilsMixin:
             width_height = MediaUtilsMixin.get_media_file_width_height(path)
             # TODO - flag to choose fallback orienttation if not ffprobe and not wdith height detected ?
             if not width_height:
-                raise Exception(
-                    "On detect orientation fallback method, cannot get width and height for media file", path
-                )
+                raise Exception("On detect orientation fallback method, cannot get file width and height", path)
+
             width = width_height["width"]
             height = width_height["height"]
+            logger.debug("Found [width:height] based orientation")
             if width > height:
                 return MediaFileOrientation.LANDSCAPE
             else:
