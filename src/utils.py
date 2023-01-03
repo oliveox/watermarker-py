@@ -72,7 +72,7 @@ def watermark_image(file: File) -> None:
     orientation = file.orientation
 
     overlay = config_manager.get_image_watermark_overlay(orientation)
-    transpose = config_manager.get_image_transpose(orientation)
+    transpose = config_manager.image_transpose
 
     watermark_file_path = config_manager.watermark_file_path
     if not watermark_file_path:
@@ -85,7 +85,7 @@ def watermark_image(file: File) -> None:
         # create output directory tree if it doesn't exist
         os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
 
-    command = FFmpegUtilsMixin.get_watermarking_command(
+    apply_watermark_command = FFmpegUtilsMixin.get_watermarking_command(
         input_file_path=file.path,
         watermark_path=watermark_file_path,
         output_file_path=output_file_path,
@@ -94,7 +94,7 @@ def watermark_image(file: File) -> None:
         watermark_scaling=watermark_scaling,
     )
 
-    run_command(command)
+    run_command(apply_watermark_command)
 
 
 def watermark_video(file: File) -> None:
@@ -112,7 +112,7 @@ def watermark_video(file: File) -> None:
         # create output directory tree if it doesn't exist
         os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
 
-    command = FFmpegUtilsMixin.get_watermarking_command(
+    apply_watermark_command = FFmpegUtilsMixin.get_watermarking_command(
         input_file_path=file.path,
         watermark_path=watermark_file_path,
         output_file_path=output_file_path,
@@ -121,7 +121,7 @@ def watermark_video(file: File) -> None:
         watermark_scaling=watermark_scaling,
     )
 
-    run_command(command)
+    run_command(apply_watermark_command)
 
 
 def run_command(command: Union[str, list]) -> None:
