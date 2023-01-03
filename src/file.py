@@ -92,15 +92,21 @@ class File(MediaUtilsMixin):
         else:
             raise Exception(f"Unknown orientation: {self.orientation}")
 
+        rounded_watermark_scaled_width = round(watermark_scaled_width, 2)
+        rounded_watermark_scaled_height = round(watermark_scaled_height, 2)
+
         logger.debug(
-            f"Dimensions(WxH). File: {media_file_width}x{media_file_height}."
-            f" Watermark: {watermark_scaled_width}x{watermark_scaled_height}"
+            f"Dimensions(WxH). File: {media_file_width} x {media_file_height}."
+            f" Watermark: {rounded_watermark_scaled_width} x {rounded_watermark_scaled_height}"
         )
 
-        return f"[1:v] scale={watermark_scaled_width}:{watermark_scaled_height} [wtrmrk];"
+        return f"[1:v] scale={rounded_watermark_scaled_width}:{rounded_watermark_scaled_height} [wtrmrk];"
 
     def __repr__(self):
         return (
             f"{self.__class__.__name__}(path={self.path}, type={self.type}, orientation={self.orientation},"
             f" output_file_path={self.output_file_path}, output_subdir={self.output_subdir})"
         )
+
+
+# 680x383.gif
