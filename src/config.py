@@ -9,8 +9,6 @@ from src.media_utils_mixin import MediaUtilsMixin
 
 class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     configuration_file_path = "config.ini"
-    video_transpose = ""
-    image_transpose = ""
 
     def __init__(self) -> None:
         self._keep_output_tree = None

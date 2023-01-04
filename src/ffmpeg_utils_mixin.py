@@ -10,7 +10,6 @@ class FFmpegUtilsMixin:
         input_file_path: str,
         watermark_path: str,
         output_file_path: str,
-        transpose: str,
         overlay: str,
         watermark_scaling: str,
     ) -> list[str]:
@@ -21,7 +20,7 @@ class FFmpegUtilsMixin:
             "-i",
             watermark_path,
             "-filter_complex",
-            f"{transpose}{watermark_scaling}{overlay}",
+            f"{watermark_scaling}{overlay}",
             output_file_path,
         ]
 

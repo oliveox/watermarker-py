@@ -72,7 +72,6 @@ def watermark_image(file: File) -> None:
     orientation = file.orientation
 
     overlay = config_manager.get_image_watermark_overlay(orientation)
-    transpose = config_manager.image_transpose
 
     watermark_file_path = config_manager.watermark_file_path
     if not watermark_file_path:
@@ -90,7 +89,6 @@ def watermark_image(file: File) -> None:
         watermark_path=watermark_file_path,
         output_file_path=output_file_path,
         overlay=overlay,
-        transpose=transpose,
         watermark_scaling=watermark_scaling,
     )
 
@@ -103,7 +101,6 @@ def watermark_video(file: File) -> None:
         raise ValueError("Watermark file path is not set")
 
     overlay = config_manager.video_watermark_overlay
-    transpose = config_manager.video_transpose
 
     watermark_scaling = file.watermark_scaling
     output_file_path = file.output_file_path
@@ -117,7 +114,6 @@ def watermark_video(file: File) -> None:
         watermark_path=watermark_file_path,
         output_file_path=output_file_path,
         overlay=overlay,
-        transpose=transpose,
         watermark_scaling=watermark_scaling,
     )
 
