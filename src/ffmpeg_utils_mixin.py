@@ -61,6 +61,8 @@ class FFmpegUtilsMixin:
             return f"{get_sign(nord, False)}{get_sign(south, True)}"
 
         # TODO - transform in a dict e.g.{"NE":(etc.)}
+        # W / H - main input width and height
+        # w / h - watermark width and height
         if position == "NE":
             overlay = (
                 f"0{get_horizontal_margins(margin_east, margin_west)}"
@@ -68,43 +70,43 @@ class FFmpegUtilsMixin:
             )
         elif position == "NC":
             overlay = (
-                f"(main_w/2-overlay_w/2{get_horizontal_margins(margin_east, margin_west)}"
+                f"(W/2-w/2{get_horizontal_margins(margin_east, margin_west)}"
                 f":0{get_vertical_margins(margin_nord, margin_south)}"
             )
         elif position == "NW":
             overlay = (
-                f"main_w-overlay_w{get_horizontal_margins(margin_east, margin_west)}"
+                f"W-w{get_horizontal_margins(margin_east, margin_west)}"
                 f":0{get_vertical_margins(margin_nord, margin_south)}"
             )
         elif position == "SE":
             overlay = (
                 f"0{get_horizontal_margins(margin_east, margin_west)}"
-                f":main_h-overlay_h{get_vertical_margins(margin_nord, margin_south)}"
+                f":H-h{get_vertical_margins(margin_nord, margin_south)}"
             )
         elif position == "SC":
             overlay = (
-                f"(main_w/2-overlay_w/2{get_horizontal_margins(margin_east, margin_west)}"
-                f":main_h-overlay_h{get_vertical_margins(margin_nord, margin_south)}"
+                f"(W/2-w/2{get_horizontal_margins(margin_east, margin_west)}"
+                f":H-h{get_vertical_margins(margin_nord, margin_south)}"
             )
         elif position == "SW":
             overlay = (
-                f"main_w-overlay_w{get_horizontal_margins(margin_east, margin_west)}"
-                f":main_h-overlay_h{get_vertical_margins(margin_nord, margin_south)}"
+                f"W-w{get_horizontal_margins(margin_east, margin_west)}"
+                f":H-h{get_vertical_margins(margin_nord, margin_south)}"
             )
         elif position == "C":
             overlay = (
-                f"(main_w/2-overlay_w/2{get_horizontal_margins(margin_east, margin_west)}"
-                f":(main_h/2-overlay_h/2{get_vertical_margins(margin_nord, margin_south)})"
+                f"(W/2-w/2{get_horizontal_margins(margin_east, margin_west)}"
+                f":(H/2-h/2{get_vertical_margins(margin_nord, margin_south)})"
             )
         elif position == "CE":
             overlay = (
                 f"0{get_horizontal_margins(margin_east, margin_west)}"
-                f":(main_h/2-overlay_h/2{get_vertical_margins(margin_nord, margin_south)})"
+                f":(H/2-h/2{get_vertical_margins(margin_nord, margin_south)})"
             )
         elif position == "CW":
             overlay = (
-                f"main_w-overlay_w{get_horizontal_margins(margin_east, margin_west)}"
-                f":(main_h/2-overlay_h/2{get_vertical_margins(margin_nord, margin_south)})"
+                f"W-w{get_horizontal_margins(margin_east, margin_west)}"
+                f":(H/2-h/2{get_vertical_margins(margin_nord, margin_south)})"
             )
         else:
             logger.debug(f"Invalid watermark position: {position}")
