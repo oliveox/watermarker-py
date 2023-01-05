@@ -1,8 +1,7 @@
 import configparser
-from functools import cache
 from typing import Optional
 
-from src.custom_types import MediaFileOrientation, WatermarkRelativeSize
+from src.custom_types import WatermarkRelativeSize
 from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
 from src.media_utils_mixin import MediaUtilsMixin
 
@@ -108,19 +107,9 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
 
         return items
 
-    @cache
-    def get_image_watermark_overlay(self, file_orientation: MediaFileOrientation) -> str:
-        overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **self.watermark_margins)
-
-        if file_orientation not in [MediaFileOrientation.LANDSCAPE, MediaFileOrientation.PORTRAIT]:
-            raise ValueError(f"Invalid orientation: {file_orientation}")
-
-        return f"[0:v][wtrmrk]{overlay}"
-
     @property
-    def video_watermark_overlay(self) -> str:
+    def watermark_overlay(self) -> str:
         overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **self.watermark_margins)
-
         return f"[0:v][wtrmrk]{overlay}"
 
 
