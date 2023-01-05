@@ -9,6 +9,7 @@ from src.media_utils_mixin import MediaUtilsMixin
 
 class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     configuration_file_path = "config.ini"
+    WATERMARK_POSITIONS = ["NE", "NC", "NW", "SE", "SC", "SW", "C", "CE", "CW"]
 
     def __init__(self) -> None:
         self._keep_output_tree = None
@@ -82,7 +83,11 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
 
     @property
     def watermark_position(self) -> str:
-        return self.config.get("WATERMARK_POSITION", "position")
+        position = self.config.get("WATERMARK_POSITION", "position")
+        if position not in self.WATERMARK_POSITIONS:
+            raise ValueError(f"Invalid watermark position: [{position}]")
+
+        return position
 
     @property
     def watermark_margins(self) -> dict[str, int]:
