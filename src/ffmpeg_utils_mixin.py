@@ -1,8 +1,6 @@
 from functools import cache
 from typing import Optional
 
-from logger import logger
-
 
 class FFmpegUtilsMixin:
     @staticmethod
@@ -33,10 +31,6 @@ class FFmpegUtilsMixin:
         margin_east: Optional[int],
         margin_west: Optional[int],
     ) -> str:
-        overlay = ""
-        if position not in ["NE", "NC", "NW", "SE", "SC", "SW", "C", "CE", "CW"]:
-            logger.debug(f"Invalid watermark position: {position}")
-
         if not margin_nord:
             margin_nord = 0
         if not margin_south:
@@ -46,69 +40,19 @@ class FFmpegUtilsMixin:
         if not margin_west:
             margin_west = 0
 
-        def get_sign(value: int, inverse: bool) -> str:
-            if value > 0:
-                sign = "-" if inverse else "+"
-            else:
-                sign = "+" if inverse else "-"
-
-            return f"{sign}{abs(value)}"
-
-        def get_horizontal_margins(east: int, west: int) -> str:
-            return f"{get_sign(east, False)}{get_sign(west, True)}"
-
-        def get_vertical_margins(nord: int, south: int) -> str:
-            return f"{get_sign(nord, False)}{get_sign(south, True)}"
-
-        # TODO - transform in a dict e.g.{"NE":(etc.)}
         # W / H - main input width and height
         # w / h - watermark width and height
-        if position == "NE":
-            overlay = (
-                f"0{get_horizontal_margins(margin_east, margin_west)}"
-                f":0{get_vertical_margins(margin_nord, margin_south)}"
-            )
-        elif position == "NC":
-            overlay = (
-                f"(W/2-w/2{get_horizontal_margins(margin_east, margin_west)}"
-                f":0{get_vertical_margins(margin_nord, margin_south)}"
-            )
-        elif position == "NW":
-            overlay = (
-                f"W-w{get_horizontal_margins(margin_east, margin_west)}"
-                f":0{get_vertical_margins(margin_nord, margin_south)}"
-            )
-        elif position == "SE":
-            overlay = (
-                f"0{get_horizontal_margins(margin_east, margin_west)}"
-                f":H-h{get_vertical_margins(margin_nord, margin_south)}"
-            )
-        elif position == "SC":
-            overlay = (
-                f"(W/2-w/2{get_horizontal_margins(margin_east, margin_west)}"
-                f":H-h{get_vertical_margins(margin_nord, margin_south)}"
-            )
-        elif position == "SW":
-            overlay = (
-                f"W-w{get_horizontal_margins(margin_east, margin_west)}"
-                f":H-h{get_vertical_margins(margin_nord, margin_south)}"
-            )
-        elif position == "C":
-            overlay = (
-                f"(W/2-w/2{get_horizontal_margins(margin_east, margin_west)}"
-                f":(H/2-h/2{get_vertical_margins(margin_nord, margin_south)})"
-            )
-        elif position == "CE":
-            overlay = (
-                f"0{get_horizontal_margins(margin_east, margin_west)}"
-                f":(H/2-h/2{get_vertical_margins(margin_nord, margin_south)})"
-            )
-        elif position == "CW":
-            overlay = (
-                f"W-w{get_horizontal_margins(margin_east, margin_west)}"
-                f":(H/2-h/2{get_vertical_margins(margin_nord, margin_south)})"
-            )
-        else:
-            logger.debug(f"Invalid watermark position: {position}")
+        overlays_by_position = {
+            "NE": f"W-w-{margin_east}:{margin_nord}",
+            "NC": f"W/2-w/2:{margin_nord}",
+            "NW": f"{margin_west}:{margin_nord}",
+            "CE": f"W-w-{margin_east}:H/2-h/2",
+            "C": "W/2-w/2:H/2-h/2",
+            "CW": f"{margin_west}:H/2-h/2",
+            "SE": f"W-w-{margin_east}:H-h-{margin_south}",
+            "SC": f"W/2-w/2:H-h-{margin_south}",
+            "SW": f"{margin_west}:H-h-{margin_south}",
+        }
+        overlay = overlays_by_position[position]
 
         return f"overlay={overlay}"
