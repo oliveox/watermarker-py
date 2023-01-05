@@ -29,6 +29,18 @@ class File(MediaUtilsMixin):
 
     @property
     @cache
+    def dimensions(self) -> dict:
+        medial_file_width_height = MediaUtilsMixin.get_media_file_width_height(self.path)
+        if not medial_file_width_height:
+            raise Exception("Cannot get width and height for media file", self.path)
+
+        return {
+            "width": medial_file_width_height["width"],
+            "height": medial_file_width_height["height"],
+        }
+
+    @property
+    @cache
     def type(self) -> FileType | None:
         kind = filetype.guess(self.path)
         if kind.mime.startswith("image"):
@@ -72,11 +84,8 @@ class File(MediaUtilsMixin):
         watermark_height = watermark_width_height["height"]
         watermark_ratio = watermark_width / watermark_height
 
-        medial_file_width_height = MediaUtilsMixin.get_media_file_width_height(self.path)
-        if not medial_file_width_height:
-            raise Exception("Cannot get width and height for media file", self.path)
-        media_file_width = medial_file_width_height["width"]
-        media_file_height = medial_file_width_height["height"]
+        media_file_width = self.dimensions["width"]
+        media_file_height = self.dimensions["height"]
 
         # compute the watermark scaling based on the smallest media file side, which depends on the orientation
         if self.orientation == MediaFileOrientation.LANDSCAPE:
