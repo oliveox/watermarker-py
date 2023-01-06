@@ -90,12 +90,12 @@ class File(MediaUtilsMixin):
         # compute the watermark scaling based on the smallest media file side, which depends on the orientation
         if self.orientation == MediaFileOrientation.LANDSCAPE:
             watermark_scaled_height = (
-                media_file_height * watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_TO_HEIGHT_RATIO]
+                watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_HEIGHT_RATIO] * media_file_height / 100
             )
             watermark_scaled_width = watermark_ratio * watermark_scaled_height
         elif self.orientation == MediaFileOrientation.PORTRAIT:
             watermark_scaled_width = (
-                media_file_width * watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_TO_WIDTH_RATIO]
+                watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_WIDTH_RATIO] * media_file_width / 100
             )
             watermark_scaled_height = watermark_scaled_width / watermark_ratio
         else:

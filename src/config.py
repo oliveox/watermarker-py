@@ -65,21 +65,37 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
         self._watermark_file_path = file_path
 
     @property
+    @cache
     def watermark_relative_size(self) -> dict[str, float]:
-        return {
-            WatermarkRelativeSize.WATERMARK_TO_HEIGHT_RATIO: float(
-                self.config.get(
-                    "WATERMARK_RELATIVE_SIZE",
-                    WatermarkRelativeSize.WATERMARK_TO_HEIGHT_RATIO,
-                )
-            ),
-            WatermarkRelativeSize.WATERMARK_TO_WIDTH_RATIO: float(
-                self.config.get(
-                    "WATERMARK_RELATIVE_SIZE",
-                    WatermarkRelativeSize.WATERMARK_TO_WIDTH_RATIO,
-                )
-            ),
-        }
+        watermark_height_ratio = self.config.get(
+            "WATERMARK_RELATIVE_SIZE",
+            WatermarkRelativeSize.WATERMARK_HEIGHT_RATIO,
+        )
+        watermark_width_ratio = self.config.get(
+            "WATERMARK_RELATIVE_SIZE",
+            WatermarkRelativeSize.WATERMARK_WIDTH_RATIO,
+        )
+
+        if watermark_width_ratio.endswith("%") and watermark_height_ratio.endswith("%"):
+            width_percentage = watermark_width_ratio[:-1]
+            height_percentage = watermark_height_ratio[:-1]
+
+            if (
+                not width_percentage.isnumeric()
+                or not height_percentage.isnumeric()
+                or int(width_percentage) < 0
+                or int(width_percentage) > 100
+                or int(height_percentage) < 0
+                or int(height_percentage) > 100
+            ):
+                raise ValueError("Watermark width and height ratio must be numeric and between 0 and 100")
+
+            return {
+                WatermarkRelativeSize.WATERMARK_HEIGHT_RATIO: int(width_percentage),
+                WatermarkRelativeSize.WATERMARK_WIDTH_RATIO: int(height_percentage),
+            }
+        else:
+            raise ValueError("Watermark relative size must be in %")
 
     @property
     def watermark_position(self) -> str:
@@ -119,7 +135,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
 
     @cache
     def _get_margins_in_pixels(self, width: int, height: int) -> dict[str, int]:
-        # convert percentage margins in pixels
+        # convert config watermark percentage margins in pixels
         margins_in_pixels = {}
 
         for margin in self.watermark_margins:
