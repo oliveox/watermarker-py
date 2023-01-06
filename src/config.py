@@ -108,10 +108,9 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     @property
     @cache
     def watermark_margins(self) -> dict[str, str]:
-        items = {}
-        for option in self.config["WATERMARK_MARGINS"]:
-            value: str = self.config.get("WATERMARK_MARGINS", option)
-
+        margins = self.config["WATERMARK_MARGINS"]
+        for option in margins:
+            value: str = margins.get(option)
             if value.endswith("%"):
                 percentage = value[:-1]
                 if not percentage.isnumeric() or int(percentage) < 0 or int(percentage) > 100:
@@ -123,9 +122,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
             else:
                 raise ValueError(f"Invalid watermark margin: [{value}]")
 
-            items[option] = value
-
-        return items
+        return dict(margins)
 
     @cache
     def watermark_overlay(self, width: int, height: int) -> str:
