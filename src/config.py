@@ -91,8 +91,8 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
                 raise ValueError("Watermark width and height ratio must be numeric and between 0 and 100")
 
             return {
-                WatermarkRelativeSize.WATERMARK_HEIGHT_RATIO: int(width_percentage),
-                WatermarkRelativeSize.WATERMARK_WIDTH_RATIO: int(height_percentage),
+                WatermarkRelativeSize.WATERMARK_HEIGHT_RATIO: int(height_percentage),
+                WatermarkRelativeSize.WATERMARK_WIDTH_RATIO: int(width_percentage),
             }
         else:
             raise ValueError("Watermark relative size must be in %")
@@ -101,7 +101,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     def watermark_position(self) -> str:
         position = self.config.get("WATERMARK_POSITION", "position")
         if position not in self.WATERMARK_POSITIONS:
-            raise ValueError(f"Invalid watermark position: [{position}]")
+            raise ValueError(f"Invalid watermark position: [{position}]. Possible values {self.WATERMARK_POSITIONS}")
 
         return position
 
