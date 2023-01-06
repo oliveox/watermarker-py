@@ -27,6 +27,7 @@ class MediaUtilsMixin:
         else:
             # decide orientation based on image width and height
             # TODO - remove duplication as this is also in get_video_orientation
+            # TODO - pass file object as it could already have width and height
             width_height = MediaUtilsMixin.get_media_file_width_height(file_path)
             if not width_height:
                 # TODO - flag to choose fallback orienttation if not ffprobe and not wdith height detected ?
@@ -55,27 +56,17 @@ class MediaUtilsMixin:
         except KeyError:
             logger.debug("No [stream:tags:rotate] orientation metadata found")
 
-            # check side_data_list (detected in .mp4 djiaction files)
             try:
                 rotation = metadata["streams"][0]["side_data_list"][0]["rotation"]
                 logger.debug("Found [stream:side_data_list:rotation] based orientation")
+
                 # check if -90 or 90
                 if abs(rotation) / 90 == 1:
                     return MediaFileOrientation.PORTRAIT
                 else:
                     return MediaFileOrientation.LANDSCAPE
-
-                # double check orientation based on width x height
-                # special flag if rotation found but not coherent with width x height
-
-                # UNDERLYING_ORIENTATION = based width x height
-                # DISPLAY_ORIENTATION = based on rotation metadata COMBINED with underlying_orientation
-                # e.g. -90 rotation with underlying orientation of 200x100
             except KeyError:
                 logger.debug("No [stream:side_data_list:rotation] orientation metadata found")
-
-            # TODO - document in docs that width / height orientation method is not precise
-            # e.g. can result in landscape for vertical videos
 
             # determine based on width height
             width_height = MediaUtilsMixin.get_media_file_width_height(path)
@@ -91,7 +82,6 @@ class MediaUtilsMixin:
             else:
                 return MediaFileOrientation.PORTRAIT
 
-        # docs - will assume landscape if orientation == None (no available metadata)
         return MediaFileOrientation.LANDSCAPE
 
     @staticmethod
