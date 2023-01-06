@@ -1,5 +1,4 @@
 import os
-import shlex
 import subprocess
 from typing import List, Union
 
@@ -59,6 +58,10 @@ def watermark_files(media_files: list[File]) -> None:
         try:
             logger.info(f"\nWatermarking {media_file.path}")
             logger.debug(media_file)
+
+            if not config_manager.overwrite and os.path.exists(media_file.output_file_path):
+                logger.info("Output file already exists. Skipping ... ")
+                continue
             watermark_file(media_file)
         except Exception as e:
             logger.info("Watermarking process failed. Skipping ...")
@@ -66,10 +69,7 @@ def watermark_files(media_files: list[File]) -> None:
 
 
 def watermark_image(file: File) -> None:
-    orientation = file.orientation
-
-    overlay = config_manager.get_image_watermark_overlay(orientation)
-    transpose = config_manager.get_image_transpose(orientation)
+    overlay = config_manager.watermark_overlay(file.dimensions["width"], file.dimensions["height"])
 
     watermark_file_path = config_manager.watermark_file_path
     if not watermark_file_path:
@@ -82,16 +82,15 @@ def watermark_image(file: File) -> None:
         # create output directory tree if it doesn't exist
         os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
 
-    command = FFmpegUtilsMixin.get_watermarking_command(
+    apply_watermark_command = FFmpegUtilsMixin.get_watermarking_command(
         input_file_path=file.path,
         watermark_path=watermark_file_path,
         output_file_path=output_file_path,
         overlay=overlay,
-        transpose=transpose,
         watermark_scaling=watermark_scaling,
     )
 
-    run_command(shlex.split(command))
+    run_command(apply_watermark_command)
 
 
 def watermark_video(file: File) -> None:
@@ -99,8 +98,7 @@ def watermark_video(file: File) -> None:
     if not watermark_file_path:
         raise ValueError("Watermark file path is not set")
 
-    overlay = config_manager.video_watermark_overlay
-    transpose = config_manager.video_transpose
+    overlay = config_manager.watermark_overlay(file.dimensions["width"], file.dimensions["height"])
 
     watermark_scaling = file.watermark_scaling
     output_file_path = file.output_file_path
@@ -109,19 +107,26 @@ def watermark_video(file: File) -> None:
         # create output directory tree if it doesn't exist
         os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
 
-    command = FFmpegUtilsMixin.get_watermarking_command(
+    apply_watermark_command = FFmpegUtilsMixin.get_watermarking_command(
         input_file_path=file.path,
         watermark_path=watermark_file_path,
         output_file_path=output_file_path,
         overlay=overlay,
-        transpose=transpose,
         watermark_scaling=watermark_scaling,
     )
 
-    run_command(shlex.split(command))
+    run_command(apply_watermark_command)
 
 
 def run_command(command: Union[str, list]) -> None:
+    # log command both as list and string (easy copy-paste)
+    logger.debug(f"Running command: \n{command} \n{' '.join(command)}")
+
+    # TODO - move this process to FFMPEGUtilsMixin - after config.py - constants separation refactor (ticket #24)
+    if config_manager.overwrite:
+        command.append("-y")
+    # TODO - if not -y then possibly add -n
+
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     display_commands_output = verbosity == 2
 

@@ -47,6 +47,12 @@ try:
         "--keep_output_tree",
         required=False,
         help="Keep the same directory tree for output as the input files",
+    )
+    parser.add_argument(
+        "--ow",
+        "--overwrite",
+        required=False,
+        help="Overwrite output file if it already exists",
         action="store_true",
     )
 
@@ -58,6 +64,7 @@ try:
     output_path = args.o[0] if args.o else None
     verbosity_level = args.v[0]
     keep_output_tree = args.k
+    overwrite = args.ow
 
     allowed_verbosity_values = [1, 2]
     if verbosity_level not in allowed_verbosity_values:
@@ -88,6 +95,7 @@ try:
     config_manager.output_dir_path = output_path
     config_manager.output_file_prefix = prefix
     config_manager.keep_output_tree = keep_output_tree
+    config_manager.overwrite = overwrite
 
     media_files = get_valid_media_files(paths=input_paths, root_iteration=True)
     watermark_files(media_files)

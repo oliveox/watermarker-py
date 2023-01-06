@@ -4,6 +4,7 @@ from typing import Optional
 
 from filetype import filetype
 
+from logger import logger
 from src.config import config_manager
 from src.custom_types import (FileType, MediaFileOrientation,
                               WatermarkRelativeSize)
@@ -25,6 +26,18 @@ class File(MediaUtilsMixin):
     @output_subdir.setter
     def output_subdir(self, value: str) -> None:
         self._output_subdir = value
+
+    @property
+    @cache
+    def dimensions(self) -> dict[str, int]:
+        medial_file_width_height = MediaUtilsMixin.get_media_file_width_height(self.path)
+        if not medial_file_width_height:
+            raise Exception("Cannot get width and height for media file", self.path)
+
+        return {
+            "width": medial_file_width_height["width"],
+            "height": medial_file_width_height["height"],
+        }
 
     @property
     @cache
@@ -64,23 +77,39 @@ class File(MediaUtilsMixin):
     def watermark_scaling(self) -> str:
         watermark_relative_sizes = config_manager.watermark_relative_size
 
-        width_height = MediaUtilsMixin.get_width_height(self.path)
-        if not width_height:
-            raise Exception("Cannot get width and height for media file", self.path)
-        width = width_height["width"]
-        height = width_height["height"]
-        media_file_ratio = width / height
+        watermark_width_height = MediaUtilsMixin.get_media_file_width_height(config_manager.watermark_file_path)
+        if not watermark_width_height:
+            raise Exception("Cannot get width and height for watermark file", config_manager.watermark_file_path)
+        watermark_width = watermark_width_height["width"]
+        watermark_height = watermark_width_height["height"]
+        watermark_ratio = watermark_width / watermark_height
 
+        media_file_width = self.dimensions["width"]
+        media_file_height = self.dimensions["height"]
+
+        # compute watermark scaling based on the smallest media file dimension (w / h), depending on the orientation
         if self.orientation == MediaFileOrientation.LANDSCAPE:
-            watermark_height = height * watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_TO_HEIGHT_RATIO]
-            watermark_width = media_file_ratio * watermark_height
+            watermark_scaled_height = (
+                watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_HEIGHT_RATIO] * media_file_height / 100
+            )
+            watermark_scaled_width = watermark_ratio * watermark_scaled_height
         elif self.orientation == MediaFileOrientation.PORTRAIT:
-            watermark_width = width * watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_TO_WIDTH_RATIO]
-            watermark_height = watermark_width / media_file_ratio
+            watermark_scaled_width = (
+                watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_WIDTH_RATIO] * media_file_width / 100
+            )
+            watermark_scaled_height = watermark_scaled_width / watermark_ratio
         else:
             raise Exception(f"Unknown orientation: {self.orientation}")
 
-        return f"[1:v] scale={watermark_width}:{watermark_height} [wtrmrk];"
+        rounded_watermark_scaled_width = round(watermark_scaled_width, 2)
+        rounded_watermark_scaled_height = round(watermark_scaled_height, 2)
+
+        logger.debug(
+            f"Dimensions(WxH). File: {media_file_width} x {media_file_height}."
+            f" Watermark: {rounded_watermark_scaled_width} x {rounded_watermark_scaled_height}"
+        )
+
+        return f"[1:v] scale={rounded_watermark_scaled_width}:{rounded_watermark_scaled_height} [wtrmrk];"
 
     def __repr__(self):
         return (

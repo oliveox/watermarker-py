@@ -2,17 +2,18 @@ import configparser
 from functools import cache
 from typing import Optional
 
-from src.custom_types import MediaFileOrientation, WatermarkRelativeSize
+from src.custom_types import WatermarkRelativeSize
 from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
 from src.media_utils_mixin import MediaUtilsMixin
 
 
 class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     configuration_file_path = "config.ini"
-    video_transpose = ""
+    WATERMARK_POSITIONS = ["NE", "NC", "NW", "SE", "SC", "SW", "C", "CE", "CW"]
 
     def __init__(self) -> None:
         self._keep_output_tree = None
+        self._overwrite: Optional[bool] = None
         self._output_file_prefix: Optional[str] = None
         self._watermark_file_path: Optional[str] = None
         self._output_dir_path: Optional[str] = None
@@ -30,6 +31,14 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     @keep_output_tree.setter
     def keep_output_tree(self, keep_output_tree: bool) -> None:
         self._keep_output_tree = keep_output_tree
+
+    @property
+    def overwrite(self) -> Optional[bool]:
+        return self._overwrite
+
+    @overwrite.setter
+    def overwrite(self, overwrite: bool) -> None:
+        self._overwrite = overwrite
 
     @property
     def output_file_prefix(self) -> Optional[str]:
@@ -56,69 +65,92 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
         self._watermark_file_path = file_path
 
     @property
+    @cache
     def watermark_relative_size(self) -> dict[str, float]:
-        return {
-            WatermarkRelativeSize.WATERMARK_TO_HEIGHT_RATIO: float(
-                self.config.get(
-                    "WATERMARK_RELATIVE_SIZE",
-                    WatermarkRelativeSize.WATERMARK_TO_HEIGHT_RATIO,
-                )
-            ),
-            WatermarkRelativeSize.WATERMARK_TO_WIDTH_RATIO: float(
-                self.config.get(
-                    "WATERMARK_RELATIVE_SIZE",
-                    WatermarkRelativeSize.WATERMARK_TO_WIDTH_RATIO,
-                )
-            ),
-        }
+        watermark_height_ratio = self.config.get(
+            "WATERMARK_RELATIVE_SIZE",
+            WatermarkRelativeSize.WATERMARK_HEIGHT_RATIO,
+        )
+        watermark_width_ratio = self.config.get(
+            "WATERMARK_RELATIVE_SIZE",
+            WatermarkRelativeSize.WATERMARK_WIDTH_RATIO,
+        )
+
+        if watermark_width_ratio.endswith("%") and watermark_height_ratio.endswith("%"):
+            width_percentage = watermark_width_ratio[:-1]
+            height_percentage = watermark_height_ratio[:-1]
+
+            if (
+                not width_percentage.isnumeric()
+                or not height_percentage.isnumeric()
+                or int(width_percentage) < 0
+                or int(width_percentage) > 100
+                or int(height_percentage) < 0
+                or int(height_percentage) > 100
+            ):
+                raise ValueError("Watermark width and height ratio must be numeric and between 0 and 100")
+
+            return {
+                WatermarkRelativeSize.WATERMARK_HEIGHT_RATIO: int(height_percentage),
+                WatermarkRelativeSize.WATERMARK_WIDTH_RATIO: int(width_percentage),
+            }
+        else:
+            raise ValueError("Watermark relative size must be in %")
 
     @property
     def watermark_position(self) -> str:
-        return self.config.get("WATERMARK_POSITION", "position")
+        position = self.config.get("WATERMARK_POSITION", "position")
+        if position not in self.WATERMARK_POSITIONS:
+            raise ValueError(f"Invalid watermark position: [{position}]. Possible values {self.WATERMARK_POSITIONS}")
+
+        return position
 
     @property
-    def watermark_margins(self) -> dict[str, int]:
-        items = {}
-        for option in self.config["WATERMARK_MARGINS"]:
-            value: str = self.config.get("WATERMARK_MARGINS", option)
-
-            int_value: int
-            if not value:
-                int_value = 0
+    @cache
+    def watermark_margins(self) -> dict[str, str]:
+        margins = self.config["WATERMARK_MARGINS"]
+        for option in margins:
+            value: str = margins.get(option)
+            if value.endswith("%"):
+                percentage = value[:-1]
+                if not percentage.isnumeric() or int(percentage) < 0 or int(percentage) > 100:
+                    raise ValueError(f"Invalid watermark margin percentage: [{value}]")
+            elif value.endswith("px"):
+                pixels = value[:-2]
+                if not pixels.isnumeric() or int(pixels) < 0:
+                    raise ValueError(f"Invalid watermark margin pixels: [{value}]")
             else:
-                try:
-                    int_value = int(value)
-                except ValueError:
-                    raise ValueError(f"Failed to parse watermark margin {option} to int. Value: {value}")
+                raise ValueError(f"Invalid watermark margin: [{value}]")
 
-            items[option] = int_value
-
-        return items
+        return dict(margins)
 
     @cache
-    def get_image_watermark_overlay(self, file_orientation: MediaFileOrientation) -> str:
-        overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **self.watermark_margins)
-        if file_orientation == MediaFileOrientation.LANDSCAPE:
-            return f"[0:v][wtrmrk]{overlay}"
-        elif file_orientation == MediaFileOrientation.PORTRAIT:
-            return f"[mediaFile][wtrmrk]{overlay}"
-        else:
-            raise ValueError(f"Invalid orientation: {file_orientation}")
-
-    @property
-    def video_watermark_overlay(self) -> str:
-        overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **self.watermark_margins)
-
+    def watermark_overlay(self, width: int, height: int) -> str:
+        margins_in_pixels = self._get_margins_in_pixels(width, height)
+        overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **margins_in_pixels)
         return f"[0:v][wtrmrk]{overlay}"
 
-    @staticmethod
-    def get_image_transpose(orientation: MediaFileOrientation) -> str:
-        if orientation == MediaFileOrientation.LANDSCAPE:
-            return ""
-        elif orientation == MediaFileOrientation.PORTRAIT:
-            return "[0:v]transpose=2 [mediaFile],"
-        else:
-            raise ValueError(f"Invalid orientation: {orientation}")
+    @cache
+    def _get_margins_in_pixels(self, width: int, height: int) -> dict[str, int]:
+        # convert config watermark percentage margins in pixels
+        margins_in_pixels = {}
+        margins = self.watermark_margins
+
+        for margin in margins:
+            value = margins[margin]
+            if value.endswith("%"):
+                percentage = int(value[:-1])
+                if margin in ["margin_nord", "margin_south"]:
+                    margins_in_pixels[margin] = int(percentage * height / 100)
+                elif margin in ["margin_east", "margin_west"]:
+                    margins_in_pixels[margin] = int(percentage * width / 100)
+                else:
+                    raise ValueError(f"Invalid margin name: {margin}")
+            else:
+                # already in pixels
+                margins_in_pixels[margin] = margins[margin]
+
+        return margins_in_pixels
 
 
 config_manager = _ConfigManager()
