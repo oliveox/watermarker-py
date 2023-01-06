@@ -29,7 +29,7 @@ class File(MediaUtilsMixin):
 
     @property
     @cache
-    def dimensions(self) -> dict:
+    def dimensions(self) -> dict[str, int]:
         medial_file_width_height = MediaUtilsMixin.get_media_file_width_height(self.path)
         if not medial_file_width_height:
             raise Exception("Cannot get width and height for media file", self.path)

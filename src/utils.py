@@ -69,7 +69,7 @@ def watermark_files(media_files: list[File]) -> None:
 
 
 def watermark_image(file: File) -> None:
-    overlay = config_manager.watermark_overlay
+    overlay = config_manager.watermark_overlay(file.dimensions["width"], file.dimensions["height"])
 
     watermark_file_path = config_manager.watermark_file_path
     if not watermark_file_path:
@@ -98,7 +98,7 @@ def watermark_video(file: File) -> None:
     if not watermark_file_path:
         raise ValueError("Watermark file path is not set")
 
-    overlay = config_manager.watermark_overlay
+    overlay = config_manager.watermark_overlay(file.dimensions["width"], file.dimensions["height"])
 
     watermark_scaling = file.watermark_scaling
     output_file_path = file.output_file_path

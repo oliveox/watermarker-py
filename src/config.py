@@ -1,4 +1,5 @@
 import configparser
+from functools import cache
 from typing import Optional
 
 from src.custom_types import WatermarkRelativeSize
@@ -89,28 +90,52 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
         return position
 
     @property
-    def watermark_margins(self) -> dict[str, int]:
+    @cache
+    def watermark_margins(self) -> dict[str, str]:
         items = {}
         for option in self.config["WATERMARK_MARGINS"]:
             value: str = self.config.get("WATERMARK_MARGINS", option)
 
-            int_value: int
-            if not value:
-                int_value = 0
+            if value.endswith("%"):
+                percentage = value[:-1]
+                if not percentage.isnumeric() or int(percentage) < 0 or int(percentage) > 100:
+                    raise ValueError(f"Invalid watermark margin percentage: [{value}]")
+            elif value.endswith("px"):
+                pixels = value[:-2]
+                if not pixels.isnumeric() or int(pixels) < 0:
+                    raise ValueError(f"Invalid watermark margin pixels: [{value}]")
             else:
-                try:
-                    int_value = int(value)
-                except ValueError:
-                    raise ValueError(f"Failed to parse watermark margin {option} to int. Value: {value}")
+                raise ValueError(f"Invalid watermark margin: [{value}]")
 
-            items[option] = int_value
+            items[option] = value
 
         return items
 
-    @property
-    def watermark_overlay(self) -> str:
-        overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **self.watermark_margins)
+    @cache
+    def watermark_overlay(self, width: int, height: int) -> str:
+        margins_in_pixels = self._get_margins_in_pixels(width, height)
+        overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **margins_in_pixels)
         return f"[0:v][wtrmrk]{overlay}"
+
+    @cache
+    def _get_margins_in_pixels(self, width: int, height: int) -> dict[str, int]:
+        # convert percentage margins in pixels
+        margins_in_pixels = {}
+
+        for margin in self.watermark_margins:
+            value = self.watermark_margins[margin]
+            if value.endswith("%"):
+                percentage = int(value[:-1])
+                if margin in ["margin_nord", "margin_south"]:
+                    margins_in_pixels[margin] = int(percentage * height / 100)
+                elif margin in ["margin_east", "margin_west"]:
+                    margins_in_pixels[margin] = int(percentage * width / 100)
+                else:
+                    raise ValueError(f"Invalid margin: {margin}")
+            else:
+                margins_in_pixels[margin] = self.watermark_margins[margin]
+
+        return margins_in_pixels
 
 
 config_manager = _ConfigManager()
