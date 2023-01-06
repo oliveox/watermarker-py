@@ -134,9 +134,10 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     def _get_margins_in_pixels(self, width: int, height: int) -> dict[str, int]:
         # convert config watermark percentage margins in pixels
         margins_in_pixels = {}
+        margins = self.watermark_margins
 
-        for margin in self.watermark_margins:
-            value = self.watermark_margins[margin]
+        for margin in margins:
+            value = margins[margin]
             if value.endswith("%"):
                 percentage = int(value[:-1])
                 if margin in ["margin_nord", "margin_south"]:
@@ -144,9 +145,10 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
                 elif margin in ["margin_east", "margin_west"]:
                     margins_in_pixels[margin] = int(percentage * width / 100)
                 else:
-                    raise ValueError(f"Invalid margin: {margin}")
+                    raise ValueError(f"Invalid margin name: {margin}")
             else:
-                margins_in_pixels[margin] = self.watermark_margins[margin]
+                # already in pixels
+                margins_in_pixels[margin] = margins[margin]
 
         return margins_in_pixels
 
