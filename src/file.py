@@ -87,7 +87,7 @@ class File(MediaUtilsMixin):
         media_file_width = self.dimensions["width"]
         media_file_height = self.dimensions["height"]
 
-        # compute the watermark scaling based on the smallest media file side, which depends on the orientation
+        # compute watermark scaling based on the smallest media file dimension (w / h), depending on the orientation
         if self.orientation == MediaFileOrientation.LANDSCAPE:
             watermark_scaled_height = (
                 watermark_relative_sizes[WatermarkRelativeSize.WATERMARK_HEIGHT_RATIO] * media_file_height / 100
@@ -116,6 +116,3 @@ class File(MediaUtilsMixin):
             f"{self.__class__.__name__}(path={self.path}, type={self.type}, orientation={self.orientation},"
             f" output_file_path={self.output_file_path}, output_subdir={self.output_subdir})"
         )
-
-
-# 680x383.gif
