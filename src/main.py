@@ -40,6 +40,7 @@ try:
         required=False,
         help="Set level of verbosity. 1 = Debug logs ; 2 = 1 + FFmpeg logs",
         nargs=1,
+        choices=[1, 2],
         type=int,
     )
     parser.add_argument(
@@ -62,16 +63,14 @@ try:
     watermark_path = args.w[0]
     prefix = args.p[0]
     output_path = args.o[0] if args.o else None
-    verbosity_level = args.v[0]
+    verbosity_level = args.v[0] if args.v else None
     keep_output_tree = args.k
     overwrite = args.ow
 
-    allowed_verbosity_values = [1, 2]
-    if verbosity_level not in allowed_verbosity_values:
-        print(f"Invalid verbosity value. Allowed values: {allowed_verbosity_values}")
-        exit(os.EX_DATAERR)
-
-    os.environ["WATERMARKER_VERBOSE"] = str(verbosity_level)
+    # TODO - need file for constants - can't import contant from logger here (triggers initialisation)
+    # from logger import VERBOSITY_ENV_VAR_NAME
+    if verbosity_level:
+        os.environ["WATERMARKER_VERBOSE"] = str(verbosity_level)
 
     # setup logging env var before importing other libraries
     from src.cli_validation import (valid_input_paths, valid_output_path,
@@ -102,6 +101,9 @@ try:
 
     exit(os.EX_OK)
 except Exception as e:
-    print("Unexpected error occurred")
-    print(e)
+    from logger import logger
+
+    logger.info("Unexpected error occurred")
+    logger.exception(e)
+
     exit(os.EX_SOFTWARE)
