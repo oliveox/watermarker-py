@@ -2,6 +2,8 @@ import logging
 from functools import cache
 from typing import Optional
 
+from src.cli_configuration import cli_configuration
+
 logger = logging.getLogger("watermarker")
 
 
@@ -14,7 +16,8 @@ class FFmpegUtilsMixin:
         overlay: str,
         watermark_scaling: str,
     ) -> list[str]:
-        return [
+
+        command = [
             "ffmpeg",
             "-i",
             input_file_path,
@@ -24,6 +27,14 @@ class FFmpegUtilsMixin:
             f"{watermark_scaling}{overlay}",
             output_file_path,
         ]
+
+        if cli_configuration.overwrite:
+            command.append("-y")
+        else:
+            # file already existing check may be done well before here and already skipped
+            command.append("-n")
+
+        return command
 
     @staticmethod
     @cache
