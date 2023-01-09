@@ -4,6 +4,7 @@ import sys
 
 logger = None
 verbosity = None
+VERBOSITY_ENV_VAR_NAME = "WATERMARKER_VERBOSE"
 
 
 class _CustomFilter(logging.Filter):
@@ -42,9 +43,6 @@ def create_logger():
     return logger
 
 
-_env_var_name = "WATERMARKER_VERBOSE"
-
-
 def initialise_logger():
     global logger
     global verbosity
@@ -55,7 +53,7 @@ def initialise_logger():
     # set verbosity
     try:
         # TODO - treat keyerror as normal (if verbose not set then it is normal for this env var to not exist)
-        verbosity = eval(os.environ["WATERMARKER_VERBOSE"])
+        verbosity = eval(os.environ[VERBOSITY_ENV_VAR_NAME])
         if verbosity:
             # allow all levels to be logged
             _stream_handler.removeFilter(_custom_filter)

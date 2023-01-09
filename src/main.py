@@ -67,8 +67,10 @@ try:
     keep_output_tree = args.k
     overwrite = args.ow
 
+    from logger import VERBOSITY_ENV_VAR_NAME
+
     if verbosity_level:
-        os.environ["WATERMARKER_VERBOSE"] = str(verbosity_level)
+        os.environ[VERBOSITY_ENV_VAR_NAME] = str(verbosity_level)
 
     # setup logging env var before importing other libraries
     from src.cli_validation import (valid_input_paths, valid_output_path,
