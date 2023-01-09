@@ -73,9 +73,9 @@ try:
         os.environ["WATERMARKER_VERBOSE"] = str(verbosity_level)
 
     # setup logging env var before importing other libraries
+    from src.cli_configuration import cli_configuration
     from src.cli_validation import (valid_input_paths, valid_output_path,
                                     valid_prefix, valid_watermark_file)
-    from src.config import config_manager
     from utils import get_valid_media_files, watermark_files
 
     if not valid_input_paths(input_paths):
@@ -90,11 +90,11 @@ try:
     if output_path and not valid_output_path(output_path):
         exit(os.EX_DATAERR)
 
-    config_manager.watermark_file_path = watermark_path
-    config_manager.output_dir_path = output_path
-    config_manager.output_file_prefix = prefix
-    config_manager.keep_output_tree = keep_output_tree
-    config_manager.overwrite = overwrite
+    cli_configuration.watermark_file_path = watermark_path
+    cli_configuration.output_dir_path = output_path
+    cli_configuration.output_file_prefix = prefix
+    cli_configuration.keep_output_tree = keep_output_tree
+    cli_configuration.overwrite = overwrite
 
     media_files = get_valid_media_files(paths=input_paths, root_iteration=True)
     watermark_files(media_files)

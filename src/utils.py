@@ -6,6 +6,7 @@ from typing import List, Union
 from filetype import filetype
 
 from logger import verbosity
+from src.cli_configuration import cli_configuration
 from src.config import config_manager
 from src.custom_types import FileType
 from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
@@ -27,7 +28,7 @@ def get_valid_media_files(paths: List[str], root_node: str = None, root_iteratio
                         if entry.is_file() and valid_media_file(entry.path):
                             output_subdir = (
                                 get_output_subdir(entry.path, path, root_node)
-                                if config_manager.keep_output_tree
+                                if cli_configuration.keep_output_tree
                                 else ""
                             )
                             valid_media_files.append(File(path=entry.path, output_subdir=output_subdir))
@@ -62,7 +63,7 @@ def watermark_files(media_files: list[File]) -> None:
             logger.info(f"\nWatermarking {media_file.path}")
             logger.debug(media_file)
 
-            if not config_manager.overwrite and os.path.exists(media_file.output_file_path):
+            if not cli_configuration.overwrite and os.path.exists(media_file.output_file_path):
                 logger.info("Output file already exists. Skipping ... ")
                 continue
             watermark_file(media_file)
@@ -74,14 +75,14 @@ def watermark_files(media_files: list[File]) -> None:
 def watermark_image(file: File) -> None:
     overlay = config_manager.watermark_overlay(file.dimensions["width"], file.dimensions["height"])
 
-    watermark_file_path = config_manager.watermark_file_path
+    watermark_file_path = cli_configuration.watermark_file_path
     if not watermark_file_path:
         raise ValueError("Watermark file path is not set")
 
     watermark_scaling = file.watermark_scaling
     output_file_path = file.output_file_path
 
-    if config_manager.keep_output_tree:
+    if cli_configuration.keep_output_tree:
         # create output directory tree if it doesn't exist
         os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
 
@@ -97,7 +98,7 @@ def watermark_image(file: File) -> None:
 
 
 def watermark_video(file: File) -> None:
-    watermark_file_path = config_manager.watermark_file_path
+    watermark_file_path = cli_configuration.watermark_file_path
     if not watermark_file_path:
         raise ValueError("Watermark file path is not set")
 
@@ -106,7 +107,7 @@ def watermark_video(file: File) -> None:
     watermark_scaling = file.watermark_scaling
     output_file_path = file.output_file_path
 
-    if config_manager.keep_output_tree:
+    if cli_configuration.keep_output_tree:
         # create output directory tree if it doesn't exist
         os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
 
@@ -126,7 +127,7 @@ def run_command(command: Union[str, list]) -> None:
     logger.debug(f"Running command: \n{command} \n{' '.join(command)}")
 
     # TODO - move this process to FFMPEGUtilsMixin - after config.py - constants separation refactor (ticket #24)
-    if config_manager.overwrite:
+    if cli_configuration.overwrite:
         command.append("-y")
     # TODO - if not -y then possibly add -n
 

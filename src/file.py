@@ -5,6 +5,7 @@ from typing import Optional
 
 from filetype import filetype
 
+from src.cli_configuration import cli_configuration
 from src.config import config_manager
 from src.custom_types import (FileType, MediaFileOrientation,
                               WatermarkRelativeSize)
@@ -65,11 +66,11 @@ class File(MediaUtilsMixin):
     @property
     @cache
     def output_file_path(self) -> str:
-        prefix = config_manager.output_file_prefix
+        prefix = cli_configuration.output_file_prefix
         if not prefix:
             raise ValueError("Output file prefix is not set")
 
-        output_dir_path = config_manager.output_dir_path
+        output_dir_path = cli_configuration.output_dir_path
         basename = os.path.basename(self.path)
 
         return os.path.join(output_dir_path, self.output_subdir, f"{prefix}{basename}")
@@ -79,9 +80,9 @@ class File(MediaUtilsMixin):
     def watermark_scaling(self) -> str:
         watermark_relative_sizes = config_manager.watermark_relative_size
 
-        watermark_width_height = MediaUtilsMixin.get_media_file_width_height(config_manager.watermark_file_path)
+        watermark_width_height = MediaUtilsMixin.get_media_file_width_height(cli_configuration.watermark_file_path)
         if not watermark_width_height:
-            raise Exception("Cannot get width and height for watermark file", config_manager.watermark_file_path)
+            raise Exception("Cannot get width and height for watermark file", cli_configuration.watermark_file_path)
         watermark_width = watermark_width_height["width"]
         watermark_height = watermark_width_height["height"]
         watermark_ratio = watermark_width / watermark_height
