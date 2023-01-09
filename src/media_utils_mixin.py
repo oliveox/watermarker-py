@@ -1,11 +1,13 @@
+import logging
 from functools import cache
 from typing import Optional
 
 import ffmpeg
 from PIL import Image
 
-from logger import logger
 from src.custom_types import MediaFileOrientation, WidthHeight
+
+logger = logging.getLogger("watermarker")
 
 
 class MediaUtilsMixin:

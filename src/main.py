@@ -101,7 +101,9 @@ try:
 
     exit(os.EX_OK)
 except Exception as e:
-    from logger import logger
+    import logging
+
+    logger = logging.getLogger("watermarker")
 
     logger.info("Unexpected error occurred")
     logger.exception(e)

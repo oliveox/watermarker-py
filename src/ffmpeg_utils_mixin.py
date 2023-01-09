@@ -1,5 +1,8 @@
+import logging
 from functools import cache
 from typing import Optional
+
+logger = logging.getLogger("watermarker")
 
 
 class FFmpegUtilsMixin:

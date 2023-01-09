@@ -1,10 +1,11 @@
+import logging
 import os
 import string
 from typing import List
 
 from filetype import filetype
 
-from logger import logger
+logger = logging.getLogger("watermarker")
 
 
 def valid_input_paths(paths: List[str]) -> bool:

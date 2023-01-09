@@ -1,14 +1,16 @@
+import logging
 import os
 from functools import cache
 from typing import Optional
 
 from filetype import filetype
 
-from logger import logger
 from src.config import config_manager
 from src.custom_types import (FileType, MediaFileOrientation,
                               WatermarkRelativeSize)
 from src.media_utils_mixin import MediaUtilsMixin
+
+logger = logging.getLogger("watermarker")
 
 
 class File(MediaUtilsMixin):
