@@ -106,6 +106,6 @@ except Exception as e:
     logger = logging.getLogger("watermarker")
 
     logger.info("Unexpected error occurred")
-    logger.exception(e)
+    logger.info(e)
 
     exit(os.EX_SOFTWARE)

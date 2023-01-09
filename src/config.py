@@ -6,6 +6,10 @@ from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
 from src.media_utils_mixin import MediaUtilsMixin
 
 
+class IncorrectWatermarkConfigurationError(Exception):
+    pass
+
+
 class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     configuration_file_path = "config.ini"
     WATERMARK_POSITIONS = ["NE", "NC", "NW", "SE", "SC", "SW", "C", "CE", "CW"]
@@ -41,20 +45,24 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
                 or int(height_percentage) < 0
                 or int(height_percentage) > 100
             ):
-                raise ValueError("Watermark width and height ratio must be numeric and between 0 and 100")
+                raise IncorrectWatermarkConfigurationError(
+                    "Watermark width and height ratio must be numeric percentage and between 0 and 100. E.g. 50%%"
+                )
 
             return {
                 WatermarkRelativeSize.WATERMARK_HEIGHT_RATIO: int(height_percentage),
                 WatermarkRelativeSize.WATERMARK_WIDTH_RATIO: int(width_percentage),
             }
         else:
-            raise ValueError("Watermark relative size must be in %")
+            raise IncorrectWatermarkConfigurationError("Watermark relative size must be in %")
 
     @property
     def watermark_position(self) -> str:
         position = self.config.get("WATERMARK_POSITION", "position")
         if position not in self.WATERMARK_POSITIONS:
-            raise ValueError(f"Invalid watermark position: [{position}]. Possible values {self.WATERMARK_POSITIONS}")
+            raise IncorrectWatermarkConfigurationError(
+                f"Invalid watermark position: [{position}]. Possible values {self.WATERMARK_POSITIONS}"
+            )
 
         return position
 
@@ -63,17 +71,20 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     def watermark_margins(self) -> dict[str, str]:
         margins = self.config["WATERMARK_MARGINS"]
         for option in margins:
-            value: str = margins.get(option)
+            try:
+                value: str = margins.get(option)
+            except configparser.InterpolationSyntaxError as e:
+                raise IncorrectWatermarkConfigurationError(f"Invalid value for watermark margin [{option}]. {e}")
             if value.endswith("%"):
                 percentage = value[:-1]
                 if not percentage.isnumeric() or int(percentage) < 0 or int(percentage) > 100:
-                    raise ValueError(f"Invalid watermark margin percentage: [{value}]")
+                    raise IncorrectWatermarkConfigurationError(f"Invalid watermark margin percentage: [{value}]")
             elif value.endswith("px"):
                 pixels = value[:-2]
                 if not pixels.isnumeric() or int(pixels) < 0:
-                    raise ValueError(f"Invalid watermark margin pixels: [{value}]")
+                    raise IncorrectWatermarkConfigurationError(f"Invalid watermark margin pixels: [{value}]")
             else:
-                raise ValueError(f"Invalid watermark margin: [{value}]")
+                raise IncorrectWatermarkConfigurationError(f"Invalid watermark margin: [{value}]")
 
         return dict(margins)
 
@@ -98,7 +109,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
                 elif margin in ["margin_east", "margin_west"]:
                     margins_in_pixels[margin] = int(percentage * width / 100)
                 else:
-                    raise ValueError(f"Invalid margin name: {margin}")
+                    raise IncorrectWatermarkConfigurationError(f"Invalid margin name: {margin}")
             else:
                 # already in pixels
                 margins_in_pixels[margin] = margins[margin]

@@ -7,7 +7,7 @@ from filetype import filetype
 
 from logger import verbosity
 from src.cli_configuration import cli_configuration
-from src.config import config_manager
+from src.config import IncorrectWatermarkConfigurationError, config_manager
 from src.custom_types import FileType
 from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
 from src.file import File
@@ -67,8 +67,10 @@ def watermark_files(media_files: list[File]) -> None:
                 logger.info("Output file already exists. Skipping ... ")
                 continue
             watermark_file(media_file)
+        except IncorrectWatermarkConfigurationError as e:
+            raise e  # incorrect watermark configurations should stop the whole watermarking process
         except Exception as e:
-            logger.info("Watermarking process failed. Skipping ...")
+            logger.info("File watermarking process failed. Skipping ...")
             logger.exception(e)
 
 
