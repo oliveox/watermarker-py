@@ -1,4 +1,4 @@
-# watermarker-goes-boom
+# watermarker
 
 ### install steps
 1. install python 3.10
