@@ -1,4 +1,4 @@
-# watermarker
+# watermarker - first release in progress
 
 ### install steps
 1. install python 3.10
