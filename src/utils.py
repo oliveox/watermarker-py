@@ -105,7 +105,9 @@ def watermark_file(file: File) -> None:
     if file.type not in [FileType.IMAGE, FileType.VIDEO]:
         raise ValueError(f"Invalid file type: {file.type}. Watermarking is supported only for images and videos. ")
 
-    overlay = config_manager.watermark_overlay(file.dimensions["width"], file.dimensions["height"])
+    overlay = config_manager.watermark_overlay(
+        file_path=file.path, width=file.dimensions["width"], height=file.dimensions["height"]
+    )
     watermark_file_path = cli_configuration.watermark_file_path
     watermark_scaling = file.watermark_scaling
     output_file_path = file.output_file_path

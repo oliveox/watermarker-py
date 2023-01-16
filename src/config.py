@@ -1,9 +1,12 @@
 import configparser
+import logging
 from functools import cache
 
 from src.custom_types import WatermarkRelativeSize
 from src.ffmpeg_utils_mixin import FFmpegUtilsMixin
 from src.media_utils_mixin import MediaUtilsMixin
+
+logger = logging.getLogger("watermarker")
 
 
 class IncorrectWatermarkConfigurationError(Exception):
@@ -13,6 +16,17 @@ class IncorrectWatermarkConfigurationError(Exception):
 class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
     configuration_file_path = "config.ini"
     WATERMARK_POSITIONS = ["NE", "NC", "NW", "SE", "SC", "SW", "C", "CE", "CW"]
+    MARGINS_BY_POSITION = {
+        "NE": ["margin_east", "margin_nord"],
+        "NC": ["margin_nord"],
+        "NW": ["margin_west", "margin_nord"],
+        "CE": ["margin_east"],
+        "C": [],
+        "CW": ["margin_west"],
+        "SE": ["margin_east", "margin_south"],
+        "SC": ["margin_south"],
+        "SW": ["margin_west", "margin_south"],
+    }
 
     def __init__(self) -> None:
         self.config = configparser.ConfigParser()
@@ -89,10 +103,29 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
         return dict(margins)
 
     @cache
-    def watermark_overlay(self, width: int, height: int) -> str:
+    def watermark_overlay(self, file_path: str, width: int, height: int) -> str:
         margins_in_pixels = self._get_margins_in_pixels(width, height)
+
+        # warn if watermark margins bigger than media file size
+        # TODO - skip comparison if position relevant margins are given in percentage
+        self._compare_margins_to_file_size(margins_in_pixels, file_path, width, height)
+
         overlay = FFmpegUtilsMixin.get_overlay(position=self.watermark_position, **margins_in_pixels)
         return f"[0:v][wtrmrk]{overlay}"
+
+    def _compare_margins_to_file_size(self, watermark_pixel_margins, file_path, file_width, file_height):
+        for margin_name in self.MARGINS_BY_POSITION[self.watermark_position]:
+            margin_value = watermark_pixel_margins[margin_name]
+            if margin_name in ["margin_nord", "margin_south"] and margin_value > file_height:
+                logger.warning(
+                    f"Watermark will be cropped. Watermark margin [name: {margin_name}, value: {margin_value}px] "
+                    f"is bigger than file height [file path: {file_path}, file_height: {file_height}px]"
+                )
+            if margin_name in ["margin_east", "margin_west"] and margin_value > file_width:
+                logger.warning(
+                    f"Watermark will be cropped. Watermark margin [name: {margin_name}, value: {margin_value}px] "
+                    f"is bigger than file width [file path: {file_path}, file_height: {file_height}px]"
+                )
 
     @cache
     def _get_margins_in_pixels(self, width: int, height: int) -> dict[str, int]:
@@ -112,7 +145,7 @@ class _ConfigManager(MediaUtilsMixin, FFmpegUtilsMixin):
                     raise IncorrectWatermarkConfigurationError(f"Invalid margin name: {margin}")
             else:
                 # already in pixels
-                margins_in_pixels[margin] = margins[margin]
+                margins_in_pixels[margin] = int(margins[margin][:-2])  # remove the 'px' at the end
 
         return margins_in_pixels
 
