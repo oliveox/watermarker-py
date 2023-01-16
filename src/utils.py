@@ -74,48 +74,6 @@ def watermark_files(media_files: list[File]) -> None:
             logger.exception(e)
 
 
-def watermark_image(file: File) -> None:
-    overlay = config_manager.watermark_overlay(file.dimensions["width"], file.dimensions["height"])
-    watermark_file_path = cli_configuration.watermark_file_path
-    watermark_scaling = file.watermark_scaling
-    output_file_path = file.output_file_path
-
-    if cli_configuration.keep_output_tree:
-        # create output directory tree if it doesn't exist
-        os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
-
-    apply_watermark_command = FFmpegUtilsMixin.get_watermarking_command(
-        input_file_path=file.path,
-        watermark_path=watermark_file_path,
-        output_file_path=output_file_path,
-        overlay=overlay,
-        watermark_scaling=watermark_scaling,
-    )
-
-    run_command(apply_watermark_command)
-
-
-def watermark_video(file: File) -> None:
-    watermark_file_path = cli_configuration.watermark_file_path
-    overlay = config_manager.watermark_overlay(file.dimensions["width"], file.dimensions["height"])
-    watermark_scaling = file.watermark_scaling
-    output_file_path = file.output_file_path
-
-    if cli_configuration.keep_output_tree:
-        # create output directory tree if it doesn't exist
-        os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
-
-    apply_watermark_command = FFmpegUtilsMixin.get_watermarking_command(
-        input_file_path=file.path,
-        watermark_path=watermark_file_path,
-        output_file_path=output_file_path,
-        overlay=overlay,
-        watermark_scaling=watermark_scaling,
-    )
-
-    run_command(apply_watermark_command)
-
-
 def run_command(command: Union[str, list]) -> None:
     # log command both as list and string (easy copy-paste)
     logger.debug(f"Running command: \n{command} \n{' '.join(command)}")
@@ -144,12 +102,27 @@ def run_command(command: Union[str, list]) -> None:
 
 
 def watermark_file(file: File) -> None:
-    if file.type == FileType.IMAGE:
-        watermark_image(file)
-    elif file.type == FileType.VIDEO:
-        watermark_video(file)
-    else:
-        raise Exception(f"Invalid file type: {file.type}")
+    if file.type not in [FileType.IMAGE, FileType.VIDEO]:
+        raise ValueError(f"Invalid file type: {file.type}. Watermarking is supported only for images and videos. ")
+
+    overlay = config_manager.watermark_overlay(file.dimensions["width"], file.dimensions["height"])
+    watermark_file_path = cli_configuration.watermark_file_path
+    watermark_scaling = file.watermark_scaling
+    output_file_path = file.output_file_path
+
+    if cli_configuration.keep_output_tree:
+        # create output directory tree if it doesn't exist
+        os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
+
+    apply_watermark_command = FFmpegUtilsMixin.get_watermarking_command(
+        input_file_path=file.path,
+        watermark_path=watermark_file_path,
+        output_file_path=output_file_path,
+        overlay=overlay,
+        watermark_scaling=watermark_scaling,
+    )
+
+    run_command(apply_watermark_command)
 
 
 def valid_media_file(path: str) -> bool:
